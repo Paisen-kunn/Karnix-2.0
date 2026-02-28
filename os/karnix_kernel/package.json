@@ -1,0 +1,13 @@
+{
+  "name": "karnix-db-exporter",
+  "version": "1.0.0",
+  "description": "Exports anonymised patient data from PostgreSQL to a C header for KarnixOS",
+  "private": true,
+  "scripts": {
+    "export": "node db_exporter.js",
+    "export:limit50": "node db_exporter.js --limit 50"
+  },
+  "dependencies": {
+    "pg": "^8.11.0"
+  }
+}

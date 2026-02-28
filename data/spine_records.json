@@ -1,0 +1,82 @@
+[
+  {
+    "patient_id": "abnormal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-02-26",
+    "risk_score": 0.0577,
+    "abnormal_prob": 0.9994,
+    "classification": "Abnormal",
+    "image_path": "./data/images/abnormal_test.pgm"
+  },
+  {
+    "patient_id": "normal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-02-26",
+    "risk_score": 100.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "Normal",
+    "image_path": "./data/images/normal_test.pgm"
+  },
+  {
+    "patient_id": "abnormal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-02-26",
+    "risk_score": 0.0577,
+    "abnormal_prob": 0.9994,
+    "classification": "Abnormal",
+    "image_path": "./data/images/abnormal_test.pgm"
+  },
+  {
+    "patient_id": "normal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-02-26",
+    "risk_score": 100.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "Normal",
+    "image_path": "./data/images/normal_test.pgm"
+  },
+  {
+    "patient_id": "abnormal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-02-26",
+    "risk_score": 0.0577,
+    "abnormal_prob": 0.9994,
+    "classification": "Abnormal",
+    "image_path": "./data/images/abnormal_test.pgm"
+  },
+  {
+    "patient_id": "normal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-02-26",
+    "risk_score": 100.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "Normal",
+    "image_path": "./data/images/normal_test.pgm"
+  },
+  {
+    "patient_id": "abnormal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-02-26",
+    "risk_score": 0.0577,
+    "abnormal_prob": 0.9994,
+    "classification": "Abnormal",
+    "image_path": "./data/images/abnormal_test.pgm"
+  },
+  {
+    "patient_id": "normal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-02-26",
+    "risk_score": 100.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "Normal",
+    "image_path": "./data/images/normal_test.pgm"
+  }
+]

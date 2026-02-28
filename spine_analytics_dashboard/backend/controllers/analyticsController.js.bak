@@ -1,0 +1,686 @@
+// Analytics Controller
+const { db } = require('../config/postgres');
+
+class AnalyticsController {
+  // Get comprehensive dashboard statistics
+  async getDashboardStats(req, res) {
+    try {
+      const stats = await db.getPatientStats();
+      
+      // Get recent scans (last 30 days)
+      const recentScansResult = await db.query(`
+        SELECT COUNT(*) as count
+        FROM patients
+        WHERE scan_date >= NOW() - INTERVAL '30 days'
+      `);
+
+      // Get gender distribution
+      const genderDist = await db.getGenderDistribution();
+      let maleCount = 0;
+      let femaleCount = 0;
+      genderDist.forEach(item => {
+        if (item.gender === 'M') maleCount = parseInt(item.count);
+        else if (item.gender === 'F') femaleCount = parseInt(item.count);
+      });
+
+      const totalPatients = parseInt(stats.total_patients) || 0;
+      const malePercentage = totalPatients > 0 ? ((maleCount / totalPatients) * 100).toFixed(2) + '%' : '0%';
+      const femalePercentage = totalPatients > 0 ? ((femaleCount / totalPatients) * 100).toFixed(2) + '%' : '0%';
+
+      res.json({
+        success: true,
+        data: {
+          overview: {
+            totalPatients,
+            abnormalCases: parseInt(stats.abnormal_cases) || 0,
+            abnormalRate: stats.abnormal_cases > 0 
+              ? ((stats.abnormal_cases / stats.total_patients) * 100).toFixed(2) + '%'
+              : '0%',
+            recentScans: parseInt(recentScansResult.rows[0].count) || 0
+          },
+          demographics: {
+            male: maleCount,
+            female: femaleCount,
+            malePercentage,
+            femalePercentage
+          },
+          ageStatistics: {
+            average: parseFloat(stats.avg_age || 0).toFixed(1),
+            minimum: 0,
+            maximum: 100
+          },
+          riskScoreStatistics: {
+            average: parseFloat(stats.avg_risk_score || 0).toFixed(2),
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Dashboard stats error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve dashboard statistics',
+        error: error.message
+      });
+    }
+  }
+
+  // Get risk distribution
+  async getRiskDistribution(req, res) {
+    try {
+      const distribution = await db.getRiskDistribution();
+      
+      const result = {
+        high: 0,
+        moderate: 0,
+        low: 0
+      };
+
+      distribution.forEach(item => {
+        const category = item.risk_category?.toLowerCase();
+        const count = parseInt(item.count);
+        if (category === 'high') result.high = count;
+        else if (category === 'moderate') result.moderate = count;
+        else if (category === 'low') result.low = count;
+      });
+
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error('Risk distribution error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve risk distribution',
+        error: error.message
+      });
+    }
+  }
+
+  // Get gender distribution
+  async getGenderDistribution(req, res) {
+    try {
+      const distribution = await db.getGenderDistribution();
+      
+      const result = {
+        male: 0,
+        female: 0
+      };
+
+      distribution.forEach(item => {
+        const gender = item.gender?.toUpperCase();
+        const count = parseInt(item.count);
+        if (gender === 'M') result.male = count;
+        else if (gender === 'F') result.female = count;
+      });
+
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error('Gender distribution error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve gender distribution',
+        error: error.message
+      });
+    }
+  }
+
+  // Get trends over time
+  async getTrends(req, res) {
+    try {
+      const { period = 30 } = req.query;
+      
+      const result = await db.query(`
+        SELECT 
+          DATE(scan_date) as date,
+          COUNT(*) as total_scans,
+          COUNT(CASE WHEN dl_classification = 'ABNORMAL' THEN 1 END) as abnormal_cases
+        FROM patients
+        WHERE scan_date >= NOW() - INTERVAL '${parseInt(period)} days'
+        GROUP BY DATE(scan_date)
+        ORDER BY date ASC
+      `);
+
+      res.json({
+        success: true,
+        data: result.rows
+      });
+    } catch (error) {
+      console.error('Trends error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve trends',
+        error: error.message
+      });
+    }
+  }
+
+  // Get abnormality rates
+  async getAbnormalityRates(req, res) {
+    try {
+      // Overall rates
+      const overallResult = await db.query(`
+        SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN dl_classification = 'ABNORMAL' THEN 1 END) as abnormal
+        FROM patients
+      `);
+
+      const overall = overallResult.rows[0];
+      const overallRate = overall.total > 0 
+        ? ((overall.abnormal / overall.total) * 100).toFixed(2) + '%'
+        : '0%';
+
+      // By gender
+      const genderResult = await db.query(`
+        SELECT 
+          sex,
+          COUNT(*) as total,
+          COUNT(CASE WHEN dl_classification = 'ABNORMAL' THEN 1 END) as abnormal
+        FROM patients
+        WHERE sex IS NOT NULL
+        GROUP BY sex
+      `);
+
+      const byGender = {
+        male: { total: 0, abnormal: 0, rate: '0%' },
+        female: { total: 0, abnormal: 0, rate: '0%' }
+      };
+
+      genderResult.rows.forEach(row => {
+        const total = parseInt(row.total);
+        const abnormal = parseInt(row.abnormal);
+        const rate = total > 0 ? ((abnormal / total) * 100).toFixed(2) + '%' : '0%';
+        
+        if (row.sex === 'M') {
+          byGender.male = { total, abnormal, rate };
+        } else if (row.sex === 'F') {
+          byGender.female = { total, abnormal, rate };
+        }
+      });
+
+      // By age group
+      const ageGroupResult = await db.query(`
+        SELECT 
+          CASE 
+            WHEN age < 21 THEN '0-20'
+            WHEN age BETWEEN 21 AND 40 THEN '21-40'
+            WHEN age BETWEEN 41 AND 60 THEN '41-60'
+            WHEN age BETWEEN 61 AND 80 THEN '61-80'
+            ELSE '81+'
+          END as age_group,
+          COUNT(*) as total,
+          COUNT(CASE WHEN dl_classification = 'ABNORMAL' THEN 1 END) as abnormal
+        FROM patients
+        WHERE age IS NOT NULL
+        GROUP BY age_group
+        ORDER BY age_group
+      `);
+
+      const byAgeGroup = {};
+      ageGroupResult.rows.forEach(row => {
+        const total = parseInt(row.total);
+        const abnormal = parseInt(row.abnormal);
+        const rate = total > 0 ? ((abnormal / total) * 100).toFixed(2) + '%' : '0%';
+        byAgeGroup[row.age_group] = { total, abnormal, rate };
+      });
+
+      res.json({
+        success: true,
+        data: {
+          overall: {
+            total: parseInt(overall.total),
+            abnormal: parseInt(overall.abnormal),
+            rate: overallRate
+          },
+          byGender,
+          byAgeGroup
+        }
+      });
+    } catch (error) {
+      console.error('Abnormality rates error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve abnormality rates',
+        error: error.message
+      });
+    }
+  }
+
+  // Get high-risk patients
+  async getHighRiskPatients(req, res) {
+    try {
+      const { limit = 20 } = req.query;
+      
+      const result = await db.query(`
+        SELECT * 
+        FROM patients
+        WHERE risk_category = 'HIGH'
+        ORDER BY risk_score DESC
+        LIMIT $1
+      `, [parseInt(limit)]);
+
+      res.json({
+        success: true,
+        data: result.rows
+      });
+    } catch (error) {
+      console.error('High-risk patients error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve high-risk patients',
+        error: error.message
+      });
+    }
+  }
+
+  // Export data
+  async exportData(req, res) {
+    try {
+      const { format = 'json' } = req.query;
+      
+      const patients = await db.getAllPatients(1000);
+
+      if (format === 'csv') {
+        // Convert to CSV
+        const headers = Object.keys(patients[0] || {});
+        const csv = [
+          headers.join(','),
+          ...patients.map(p => headers.map(h => JSON.stringify(p[h] || '')).join(','))
+        ].join('\n');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=spine_data.csv');
+        res.send(csv);
+      } else {
+        res.json({
+          success: true,
+          data: patients,
+          count: patients.length,
+          exportedAt: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Export data error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to export data',
+        error: error.message
+      });
+    }
+  }
+}
+
+module.exports = new AnalyticsController();
+
+      const riskDistribution = database.getRiskDistribution();
+
+      // Calculate age statistics
+      const ages = allPatients.map(p => p.age);
+      const avgAge = ages.reduce((a, b) => a + b, 0) / ages.length;
+      const minAge = Math.min(...ages);
+      const maxAge = Math.max(...ages);
+
+      // Calculate risk score statistics
+      const riskScores = allPatients.map(p => p.risk_score);
+      const avgRiskScore = riskScores.reduce((a, b) => a + b, 0) / riskScores.length;
+      const minRiskScore = Math.min(...riskScores);
+      const maxRiskScore = Math.max(...riskScores);
+
+      // Gender distribution
+      const maleCount = allPatients.filter(p => p.sex.toLowerCase() === 'm').length;
+      const femaleCount = allPatients.filter(p => p.sex.toLowerCase() === 'f').length;
+
+      // Abnormality statistics
+      const abnormalityProbabilities = allPatients.map(p => p.abnormal_prob);
+      const avgAbnormalProb = abnormalityProbabilities.reduce((a, b) => a + b, 0) / abnormalityProbabilities.length;
+
+      // Classification distribution
+      const classificationCounts = {};
+      allPatients.forEach(p => {
+        classificationCounts[p.classification] = (classificationCounts[p.classification] || 0) + 1;
+      });
+
+      // Recent scans (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentScans = allPatients.filter(p => new Date(p.date) >= thirtyDaysAgo);
+
+      res.json({
+        success: true,
+        data: {
+          overview: {
+            totalPatients: allPatients.length,
+            abnormalCases: abnormalPatients.length,
+            abnormalRate: (abnormalPatients.length / allPatients.length * 100).toFixed(2) + '%',
+            recentScans: recentScans.length
+          },
+          riskDistribution: {
+            high: riskDistribution.high,
+            moderate: riskDistribution.moderate,
+            low: riskDistribution.low
+          },
+          demographics: {
+            male: maleCount,
+            female: femaleCount,
+            malePercentage: (maleCount / allPatients.length * 100).toFixed(2) + '%',
+            femalePercentage: (femaleCount / allPatients.length * 100).toFixed(2) + '%'
+          },
+          ageStatistics: {
+            average: parseFloat(avgAge.toFixed(1)),
+            minimum: minAge,
+            maximum: maxAge
+          },
+          riskScoreStatistics: {
+            average: parseFloat(avgRiskScore.toFixed(2)),
+            minimum: parseFloat(minRiskScore.toFixed(2)),
+            maximum: parseFloat(maxRiskScore.toFixed(2))
+          },
+          abnormalityStatistics: {
+            averageProbability: parseFloat(avgAbnormalProb.toFixed(2))
+          },
+          classificationDistribution: classificationCounts
+        }
+      });
+    } catch (error) {
+      console.error('Get dashboard stats error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve dashboard statistics'
+      });
+    }
+  }
+
+  // Get risk distribution with detailed breakdown
+  async getRiskDistribution(req, res) {
+    try {
+      const allPatients = database.getAllPatients();
+      const distribution = database.getRiskDistribution();
+
+      // Get detailed risk ranges
+      const riskRanges = {
+        critical: allPatients.filter(p => p.risk_score >= 90).length,
+        high: allPatients.filter(p => p.risk_score >= 70 && p.risk_score < 90).length,
+        moderateHigh: allPatients.filter(p => p.risk_score >= 50 && p.risk_score < 70).length,
+        moderate: allPatients.filter(p => p.risk_score >= 30 && p.risk_score < 50).length,
+        low: allPatients.filter(p => p.risk_score >= 10 && p.risk_score < 30).length,
+        minimal: allPatients.filter(p => p.risk_score < 10).length
+      };
+
+      res.json({
+        success: true,
+        data: {
+          summary: distribution,
+          detailed: riskRanges,
+          percentages: {
+            high: (distribution.high / allPatients.length * 100).toFixed(2) + '%',
+            moderate: (distribution.moderate / allPatients.length * 100).toFixed(2) + '%',
+            low: (distribution.low / allPatients.length * 100).toFixed(2) + '%'
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Get risk distribution error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve risk distribution'
+      });
+    }
+  }
+
+  // Get trends over time
+  async getTrends(req, res) {
+    try {
+      const { period = '30' } = req.query; // days
+      const allPatients = database.getAllPatients();
+
+      // Sort by date
+      const sortedPatients = allPatients.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // Group by date
+      const dateGroups = {};
+      sortedPatients.forEach(p => {
+        const date = p.date.split('T')[0]; // Get YYYY-MM-DD
+        if (!dateGroups[date]) {
+          dateGroups[date] = {
+            date,
+            count: 0,
+            abnormalCount: 0,
+            totalRiskScore: 0,
+            totalAbnormalProb: 0
+          };
+        }
+        dateGroups[date].count++;
+        if (new Patient(p).isAbnormal()) {
+          dateGroups[date].abnormalCount++;
+        }
+        dateGroups[date].totalRiskScore += p.risk_score;
+        dateGroups[date].totalAbnormalProb += p.abnormal_prob;
+      });
+
+      // Calculate averages and format
+      const trends = Object.values(dateGroups).map(group => ({
+        date: group.date,
+        scanCount: group.count,
+        abnormalCount: group.abnormalCount,
+        abnormalRate: (group.abnormalCount / group.count * 100).toFixed(2),
+        avgRiskScore: (group.totalRiskScore / group.count).toFixed(2),
+        avgAbnormalProb: (group.totalAbnormalProb / group.count).toFixed(2)
+      }));
+
+      // Get last N days if specified
+      const periodDays = parseInt(period);
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - periodDays);
+      
+      const filteredTrends = trends.filter(t => new Date(t.date) >= cutoffDate);
+
+      res.json({
+        success: true,
+        data: filteredTrends,
+        period: `${periodDays} days`,
+        summary: {
+          totalDays: filteredTrends.length,
+          totalScans: filteredTrends.reduce((sum, t) => sum + t.scanCount, 0),
+          totalAbnormal: filteredTrends.reduce((sum, t) => sum + t.abnormalCount, 0)
+        }
+      });
+    } catch (error) {
+      console.error('Get trends error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve trends'
+      });
+    }
+  }
+
+  // Get abnormality rates by demographics
+  async getAbnormalityRates(req, res) {
+    try {
+      const allPatients = database.getAllPatients();
+      const abnormalPatients = database.getAbnormalPatients();
+
+      // By gender
+      const malePatients = allPatients.filter(p => p.sex.toLowerCase() === 'm');
+      const femalePatients = allPatients.filter(p => p.sex.toLowerCase() === 'f');
+      const maleAbnormal = abnormalPatients.filter(p => p.sex.toLowerCase() === 'm');
+      const femaleAbnormal = abnormalPatients.filter(p => p.sex.toLowerCase() === 'f');
+
+      // By age groups
+      const ageGroups = {
+        '0-20': { total: 0, abnormal: 0 },
+        '21-40': { total: 0, abnormal: 0 },
+        '41-60': { total: 0, abnormal: 0 },
+        '61-80': { total: 0, abnormal: 0 },
+        '81+': { total: 0, abnormal: 0 }
+      };
+
+      allPatients.forEach(p => {
+        const patient = new Patient(p);
+        let group;
+        if (p.age <= 20) group = '0-20';
+        else if (p.age <= 40) group = '21-40';
+        else if (p.age <= 60) group = '41-60';
+        else if (p.age <= 80) group = '61-80';
+        else group = '81+';
+
+        ageGroups[group].total++;
+        if (patient.isAbnormal()) {
+          ageGroups[group].abnormal++;
+        }
+      });
+
+      // Calculate rates
+      const ageGroupRates = {};
+      Object.keys(ageGroups).forEach(group => {
+        const data = ageGroups[group];
+        ageGroupRates[group] = {
+          total: data.total,
+          abnormal: data.abnormal,
+          rate: data.total > 0 ? (data.abnormal / data.total * 100).toFixed(2) + '%' : '0%'
+        };
+      });
+
+      res.json({
+        success: true,
+        data: {
+          byGender: {
+            male: {
+              total: malePatients.length,
+              abnormal: maleAbnormal.length,
+              rate: (maleAbnormal.length / malePatients.length * 100).toFixed(2) + '%'
+            },
+            female: {
+              total: femalePatients.length,
+              abnormal: femaleAbnormal.length,
+              rate: (femaleAbnormal.length / femalePatients.length * 100).toFixed(2) + '%'
+            }
+          },
+          byAgeGroup: ageGroupRates,
+          overall: {
+            total: allPatients.length,
+            abnormal: abnormalPatients.length,
+            rate: (abnormalPatients.length / allPatients.length * 100).toFixed(2) + '%'
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Get abnormality rates error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve abnormality rates'
+      });
+    }
+  }
+
+  // Get classification breakdown
+  async getClassificationBreakdown(req, res) {
+    try {
+      const allPatients = database.getAllPatients();
+      
+      const breakdown = {};
+      allPatients.forEach(p => {
+        const classification = p.classification;
+        if (!breakdown[classification]) {
+          breakdown[classification] = {
+            count: 0,
+            patients: [],
+            avgRiskScore: 0,
+            totalRiskScore: 0
+          };
+        }
+        breakdown[classification].count++;
+        breakdown[classification].patients.push(p.patient_id);
+        breakdown[classification].totalRiskScore += p.risk_score;
+      });
+
+      // Calculate averages
+      Object.keys(breakdown).forEach(key => {
+        const data = breakdown[key];
+        data.avgRiskScore = (data.totalRiskScore / data.count).toFixed(2);
+        data.percentage = (data.count / allPatients.length * 100).toFixed(2) + '%';
+        delete data.totalRiskScore; // Remove temporary field
+      });
+
+      res.json({
+        success: true,
+        data: breakdown
+      });
+    } catch (error) {
+      console.error('Get classification breakdown error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve classification breakdown'
+      });
+    }
+  }
+
+  // Get high-risk patients summary
+  async getHighRiskPatients(req, res) {
+    try {
+      const allPatients = database.getAllPatients();
+      const highRiskPatients = allPatients
+        .filter(p => new Patient(p).getRiskCategory() === 'HIGH')
+        .sort((a, b) => b.risk_score - a.risk_score)
+        .slice(0, 20); // Top 20 highest risk
+
+      res.json({
+        success: true,
+        data: highRiskPatients.map(p => new Patient(p).toJSON()),
+        count: highRiskPatients.length
+      });
+    } catch (error) {
+      console.error('Get high-risk patients error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve high-risk patients'
+      });
+    }
+  }
+
+  // Export data for reporting
+  async exportData(req, res) {
+    try {
+      const { format = 'json', includeImages = 'false' } = req.query;
+      const allPatients = database.getAllPatients();
+
+      let exportData = allPatients.map(p => {
+        const patient = new Patient(p);
+        const data = patient.toJSON();
+        if (includeImages === 'false') {
+          delete data.image_path;
+        }
+        return data;
+      });
+
+      if (format === 'csv') {
+        // Convert to CSV
+        const headers = Object.keys(exportData[0]).join(',');
+        const rows = exportData.map(p => Object.values(p).join(',')).join('\n');
+        const csv = `${headers}\n${rows}`;
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=spine_data_export.csv');
+        res.send(csv);
+      } else {
+        res.json({
+          success: true,
+          data: exportData,
+          exportDate: new Date().toISOString(),
+          totalRecords: exportData.length
+        });
+      }
+    } catch (error) {
+      console.error('Export data error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to export data'
+      });
+    }
+  }
+}
+
+module.exports = new AnalyticsController();

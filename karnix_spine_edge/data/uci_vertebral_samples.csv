@@ -1,0 +1,41 @@
+# UCI Vertebral Column Dataset - Sample Cases
+# 6 biomechanical features + classification
+# pelvic_incidence,pelvic_tilt,lumbar_lordosis,sacral_slope,pelvic_radius,spondylolisthesis,class
+#
+# Normal cases (healthy spine)
+63.03,22.55,39.61,40.48,98.67,-0.25,Normal
+39.06,10.06,25.02,29.00,114.41,4.56,Normal
+68.83,22.22,50.09,46.61,105.99,-3.53,Normal
+69.30,24.65,44.31,44.64,101.87,11.21,Normal
+49.71,9.65,28.32,40.06,108.17,7.92,Normal
+40.25,13.92,25.12,26.33,130.33,2.23,Normal
+53.43,15.86,37.17,37.57,120.57,5.99,Normal
+45.37,10.71,18.89,34.66,117.27,-0.80,Normal
+#
+# Disk Hernia cases (herniated disc)
+37.67,11.90,23.38,25.77,113.05,21.69,DiskHernia
+50.81,18.59,27.27,32.23,112.68,32.19,DiskHernia
+77.12,28.70,49.85,48.42,103.03,6.50,DiskHernia
+78.02,29.20,45.36,48.82,101.49,13.63,DiskHernia
+85.71,29.08,44.51,56.63,107.60,24.04,DiskHernia
+73.10,25.03,51.81,48.07,110.85,3.42,DiskHernia
+51.05,21.63,26.53,29.42,112.73,43.25,DiskHernia
+64.17,20.78,39.17,43.39,114.59,18.07,DiskHernia
+#
+# Spondylolisthesis cases (vertebral slippage)
+88.02,39.05,81.77,48.97,116.60,56.77,Spondylolisthesis
+65.61,23.69,58.20,41.92,124.00,52.20,Spondylolisthesis
+44.37,13.22,39.06,31.15,133.77,48.33,Spondylolisthesis
+52.21,17.43,38.97,34.78,121.36,55.59,Spondylolisthesis
+77.48,33.99,61.08,43.49,112.87,69.37,Spondylolisthesis
+70.08,28.45,49.27,41.63,119.48,65.48,Spondylolisthesis
+80.88,27.45,54.38,53.43,113.58,63.71,Spondylolisthesis
+43.01,12.74,31.00,30.27,131.22,76.81,Spondylolisthesis
+#
+# Edge cases - borderline Normal/DiskHernia
+55.75,15.45,33.99,40.30,116.25,8.31,Normal
+58.18,16.89,43.09,41.29,115.59,12.50,DiskHernia
+#
+# Edge cases - borderline DiskHernia/Spondylolisthesis  
+61.37,20.78,46.46,40.59,118.55,28.50,DiskHernia
+63.25,22.18,46.80,41.07,115.23,35.75,Spondylolisthesis
