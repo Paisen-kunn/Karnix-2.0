@@ -1728,5 +1728,225 @@
     "abnormal_prob": 4.7426,
     "classification": "Normal",
     "image_path": "./data/images/test_normal_02.ppm"
+  },
+  {
+    "patient_id": "190e4955159681dacac292680cdccc",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 22.8696,
+    "abnormal_prob": 49.5091,
+    "classification": "Normal",
+    "image_path": "./data/images/190e4955159681dacac292680cdccc.jpg"
+  },
+  {
+    "patient_id": "2c24212448b93e77d5183f534fae44",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 22.4670,
+    "abnormal_prob": 48.7298,
+    "classification": "Normal",
+    "image_path": "./data/images/2c24212448b93e77d5183f534fae44.jpg"
+  },
+  {
+    "patient_id": "53496126f33ca9e52fecce5d9ba38e_big_gallery",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 27.7428,
+    "abnormal_prob": 57.2732,
+    "classification": "Abnormal",
+    "image_path": "./data/images/53496126f33ca9e52fecce5d9ba38e_big_gallery.jpeg"
+  },
+  {
+    "patient_id": "Screenshot 2026-02-27 at 5.28.59 PM",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 37.4488,
+    "abnormal_prob": 90.6751,
+    "classification": "Abnormal",
+    "image_path": "./data/images/Screenshot 2026-02-27 at 5.28.59 PM.png"
+  },
+  {
+    "patient_id": "Screenshot 2026-02-27 at 5.29.38 PM",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 24.5610,
+    "abnormal_prob": 52.1694,
+    "classification": "Abnormal",
+    "image_path": "./data/images/Screenshot 2026-02-27 at 5.29.38 PM.png"
+  },
+  {
+    "patient_id": "Screenshot 2026-02-27 at 5.30.06 PM",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 32.7346,
+    "abnormal_prob": 79.7715,
+    "classification": "Abnormal",
+    "image_path": "./data/images/Screenshot 2026-02-27 at 5.30.06 PM.png"
+  },
+  {
+    "patient_id": "abnormal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 7.6286,
+    "abnormal_prob": 16.5036,
+    "classification": "Normal",
+    "image_path": "./data/images/abnormal_test.pgm"
+  },
+  {
+    "patient_id": "normal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 17.8132,
+    "abnormal_prob": 16.9305,
+    "classification": "Normal",
+    "image_path": "./data/images/normal_test.pgm"
+  },
+  {
+    "patient_id": "test_abnormal_01",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 2.6470,
+    "abnormal_prob": 4.7426,
+    "classification": "Normal",
+    "image_path": "./data/images/test_abnormal_01.ppm"
+  },
+  {
+    "patient_id": "test_normal_01",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 2.6470,
+    "abnormal_prob": 4.7426,
+    "classification": "Normal",
+    "image_path": "./data/images/test_normal_01.ppm"
+  },
+  {
+    "patient_id": "test_normal_02",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-04-15",
+    "risk_score": 2.6470,
+    "abnormal_prob": 4.7426,
+    "classification": "Normal",
+    "image_path": "./data/images/test_normal_02.ppm"
+  },
+  {
+    "patient_id": "190e4955159681dacac292680cdccc",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 22.8696,
+    "abnormal_prob": 49.5091,
+    "classification": "Normal",
+    "image_path": "./data/images/190e4955159681dacac292680cdccc.jpg"
+  },
+  {
+    "patient_id": "2c24212448b93e77d5183f534fae44",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 22.4670,
+    "abnormal_prob": 48.7298,
+    "classification": "Normal",
+    "image_path": "./data/images/2c24212448b93e77d5183f534fae44.jpg"
+  },
+  {
+    "patient_id": "53496126f33ca9e52fecce5d9ba38e_big_gallery",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 27.7428,
+    "abnormal_prob": 57.2732,
+    "classification": "Abnormal",
+    "image_path": "./data/images/53496126f33ca9e52fecce5d9ba38e_big_gallery.jpeg"
+  },
+  {
+    "patient_id": "Screenshot 2026-02-27 at 5.28.59 PM",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 37.4488,
+    "abnormal_prob": 90.6751,
+    "classification": "Abnormal",
+    "image_path": "./data/images/Screenshot 2026-02-27 at 5.28.59 PM.png"
+  },
+  {
+    "patient_id": "Screenshot 2026-02-27 at 5.29.38 PM",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 24.5610,
+    "abnormal_prob": 52.1694,
+    "classification": "Abnormal",
+    "image_path": "./data/images/Screenshot 2026-02-27 at 5.29.38 PM.png"
+  },
+  {
+    "patient_id": "Screenshot 2026-02-27 at 5.30.06 PM",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 32.7346,
+    "abnormal_prob": 79.7715,
+    "classification": "Abnormal",
+    "image_path": "./data/images/Screenshot 2026-02-27 at 5.30.06 PM.png"
+  },
+  {
+    "patient_id": "abnormal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 7.6286,
+    "abnormal_prob": 16.5036,
+    "classification": "Normal",
+    "image_path": "./data/images/abnormal_test.pgm"
+  },
+  {
+    "patient_id": "normal_test",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 17.8132,
+    "abnormal_prob": 16.9305,
+    "classification": "Normal",
+    "image_path": "./data/images/normal_test.pgm"
+  },
+  {
+    "patient_id": "test_abnormal_01",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 2.6470,
+    "abnormal_prob": 4.7426,
+    "classification": "Normal",
+    "image_path": "./data/images/test_abnormal_01.ppm"
+  },
+  {
+    "patient_id": "test_normal_01",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 2.6470,
+    "abnormal_prob": 4.7426,
+    "classification": "Normal",
+    "image_path": "./data/images/test_normal_01.ppm"
+  },
+  {
+    "patient_id": "test_normal_02",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-07-20",
+    "risk_score": 2.6470,
+    "abnormal_prob": 4.7426,
+    "classification": "Normal",
+    "image_path": "./data/images/test_normal_02.ppm"
   }
 ]
