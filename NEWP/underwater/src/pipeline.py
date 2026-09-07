@@ -27,18 +27,72 @@ try:
 except ImportError:
     YOLO_AVAILABLE = False
 
-BOX_COLOR = (0, 0, 255)  # red, BGR
-TEXT_COLOR = (0, 255, 255)
+COLOR_MAP = {
+    "shipwreck_plane": (255, 229, 0),  # Cyan / Yellow
+    "shipwreck": (102, 255, 0),        # Bright Green
+    "pipe": (0, 153, 255),             # Bright Orange
+    "cylinder": (0, 204, 255),         # Bright Yellow
+    "ghost_net": (204, 0, 255),        # Magenta
+    "debris": (51, 51, 255),           # Bright Red
+}
+
+LABEL_DISPLAY_MAP = {
+    "shipwreck_plane": "✈️ Aircraft Wreck",
+    "shipwreck": "🚢 Shipwreck Target",
+    "pipe": "⛽ Underwater Pipe",
+    "cylinder": "🛢️ Cylinder / Container",
+    "ghost_net": "🕸️ Ghost Net / Rope",
+    "debris": "🔍 Marine Debris Anomaly",
+}
 
 
 def draw_overlay(original_bgr: np.ndarray, records: list[dict]) -> np.ndarray:
+    """Draw tactical, high-contrast bounding boxes with filled text labels."""
     overlay = original_bgr.copy()
+    h, w = overlay.shape[:2]
+    
+    # Scale box border and text size dynamically based on image resolution
+    thickness = max(2, int(min(h, w) / 300))
+    font_scale = max(0.45, min(h, w) / 1000.0)
+
     for r in records:
         b = r["bbox_px"]
-        x, y, w, h = b["x"], b["y"], b["w"], b["h"]
-        cv2.rectangle(overlay, (x, y), (x + w, y + h), BOX_COLOR, 2)
-        label = f"{r['label']} {r['confidence_percent']:.0f}%"
-        cv2.putText(overlay, label, (x, max(0, y - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, TEXT_COLOR, 1, cv2.LINE_AA)
+        x, y, bw, bh = b["x"], b["y"], b["w"], b["h"]
+        raw_label = r.get("label", "debris")
+        color = COLOR_MAP.get(raw_label, (0, 255, 255))
+        display_name = LABEL_DISPLAY_MAP.get(raw_label, raw_label.replace("_", " ").title())
+        conf_pct = r.get("confidence_percent", r.get("confidence", 0) * 100)
+
+        # 1. Main Bounding Box
+        cv2.rectangle(overlay, (x, y), (x + bw, y + bh), color, thickness)
+
+        # 2. Corner Crosshairs
+        corner_len = max(6, int(min(bw, bh) * 0.2))
+        cv2.line(overlay, (x, y), (x + corner_len, y), color, thickness + 1)
+        cv2.line(overlay, (x, y), (x, y + corner_len), color, thickness + 1)
+        cv2.line(overlay, (x + bw, y), (x + bw - corner_len, y), color, thickness + 1)
+        cv2.line(overlay, (x + bw, y), (x + bw, y + corner_len), color, thickness + 1)
+        cv2.line(overlay, (x, y + bh), (x + corner_len, y + bh), color, thickness + 1)
+        cv2.line(overlay, (x, y + bh), (x, y + bh - corner_len), color, thickness + 1)
+        cv2.line(overlay, (x + bw, y + bh), (x + bw - corner_len, y + bh), color, thickness + 1)
+        cv2.line(overlay, (x + bw, y + bh), (x + bw, y + bh - corner_len), color, thickness + 1)
+
+        # 3. Label Text Badge
+        text_str = f"{display_name} ({conf_pct:.0f}%)"
+        (tw, th), baseline = cv2.getTextSize(text_str, cv2.FONT_HERSHEY_SIMPLEX, font_scale, 1)
+
+        # Badge position (above box, or inside top if near top border)
+        by1 = max(0, y - th - 8)
+        by2 = y if y >= th + 8 else y + th + 8
+        ty = y - 4 if y >= th + 8 else y + th + 4
+
+        # Filled badge background
+        cv2.rectangle(overlay, (x, by1), (x + tw + 10, by2), (20, 20, 20), -1)
+        cv2.rectangle(overlay, (x, by1), (x + tw + 10, by2), color, 1)
+
+        # White text inside badge
+        cv2.putText(overlay, text_str, (x + 5, ty), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), 1, cv2.LINE_AA)
+
     return overlay
 
 
@@ -82,7 +136,7 @@ def run_pipeline(
         # Use classical detector
         raw_detections = ClassicalSonarDetector().detect(gray)
 
-    kept_detections = filter_detections(raw_detections, min_confidence=min_confidence)
+    kept_detections = filter_detections(raw_detections, min_confidence=min_confidence, image_shape=gray.shape[:2])
     records = build_report(
         kept_detections, metadata, gray.shape, range_m=range_m, source_image=source_image,
     )

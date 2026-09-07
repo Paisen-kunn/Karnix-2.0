@@ -35,29 +35,48 @@ def _non_max_suppress(detections: list[Detection], iou_threshold: float = 0.4) -
 def filter_detections(
     detections: list[Detection],
     min_confidence: float = DEFAULT_MIN_CONFIDENCE,
+    image_shape: tuple[int, int] | None = None,
 ) -> list[Detection]:
-    """Suppress natural-clutter false positives and duplicate/overlapping boxes.
+    """Suppress natural-clutter false positives, water-column noise, and duplicate/overlapping boxes.
 
     Rules applied (in order):
       1. Reject boxes below minimum confidence score threshold.
-      2. For classical heuristic detections: reject boxes with no acoustic shadow AND low fill ratio.
-      3. Non-max suppression to collapse duplicate/overlapping boxes onto the best one.
+      2. Reject top water-column surface return noise and horizontal streaks.
+      3. For classical/saliency detections: reject boxes with no acoustic shadow AND low fill ratio.
+      4. Non-max suppression to collapse duplicate/overlapping boxes onto the best one.
     """
     survivors = []
+    img_h, img_w = image_shape if image_shape else (None, None)
+
     for det in detections:
         if det.confidence < min_confidence:
             continue
 
-        # Only apply physical clutter suppression if shadow_ratio AND fill_ratio are explicitly measured
+        if img_h and img_w:
+            # 1. Suppress water-column surface return strip at top of sonar scan
+            if det.y < int(img_h * 0.10) and det.w > int(img_w * 0.35):
+                continue
+
+            # 2. Suppress horizontal dropout streaks spanning > 50% image width
+            if det.w > int(img_w * 0.50):
+                continue
+
+            # 3. Suppress massive background boxes (> 25% total image area)
+            if (det.w * det.h) > int(0.25 * img_h * img_w):
+                continue
+
+        # Physical acoustic clutter suppression
         shadow_ratio = det.features.get("shadow_ratio")
         fill_ratio = det.features.get("fill_ratio")
+        contrast_ratio = det.features.get("contrast_ratio")
+
         if shadow_ratio is not None and fill_ratio is not None:
-            if shadow_ratio < 0.05 and fill_ratio < 0.35:
-                continue  # looks like flat natural texture, not a proud object
+            if shadow_ratio < 0.04 and fill_ratio < 0.30 and (contrast_ratio is None or contrast_ratio < 1.20):
+                continue  # looks like flat natural seafloor texture, not an object
 
         survivors.append(det)
 
-    return _non_max_suppress(survivors, iou_threshold=0.35)
+    return _non_max_suppress(survivors, iou_threshold=0.25)
 
 
 def confidence_percent(detections: list[Detection]) -> list[dict]:

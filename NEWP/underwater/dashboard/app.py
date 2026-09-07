@@ -23,8 +23,8 @@ from flask_cors import CORS
 from werkzeug.exceptions import BadRequest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from NEWP.underwater.src.pipeline import run_pipeline  # noqa: E402
-from NEWP.underwater.src.reporting.report_generator import to_csv, to_json  # noqa: E402
+from src.pipeline import run_pipeline  # noqa: E402
+from src.reporting.report_generator import to_csv, to_json  # noqa: E402
 
 ALLOWED_IMAGE_EXT = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp"}
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
