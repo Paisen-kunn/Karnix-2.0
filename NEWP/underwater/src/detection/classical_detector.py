@@ -76,18 +76,39 @@ class ClassicalSonarDetector(BaseDetector):
 
     @staticmethod
     def _shadow_ratio(gray: np.ndarray, x: int, y: int, w: int, h: int) -> float:
-        """Fraction of dark (shadow) pixels immediately behind (below) the return."""
-        img_h = gray.shape[0]
-        shadow_y0 = min(y + h, img_h)
-        shadow_y1 = min(y + h + int(h * 1.2), img_h)
-        if shadow_y1 <= shadow_y0:
-            return 0.0
-        shadow_patch = gray[shadow_y0:shadow_y1, x:x + w]
-        if shadow_patch.size == 0:
-            return 0.0
-        local_mean = gray[max(0, y - h):min(img_h, y + h), x:x + w].mean() or 1.0
-        dark_pixels = np.sum(shadow_patch < 0.5 * local_mean)
-        return float(dark_pixels) / shadow_patch.size
+        """Fraction of dark (shadow) pixels around the return in all 3 beam directions."""
+        img_h, img_w = gray.shape[:2]
+        x0, y0 = max(0, x), max(0, y)
+        x1, y1 = min(img_w, x + w), min(img_h, y + h)
+
+        bg_patch = gray[max(0, y - h):min(img_h, y + 2 * h), max(0, x - w):min(img_w, x + 2 * w)]
+        bg_mean = float(bg_patch.mean()) if bg_patch.size > 0 else 1.0
+        bg_thresh = 0.50 * bg_mean
+
+        shadow_ratios = []
+
+        # 1. Right shadow
+        rx0, rx1 = x1, min(img_w, x1 + max(w, 60))
+        if rx1 > rx0:
+            r_patch = gray[y0:y1, rx0:rx1]
+            if r_patch.size > 0:
+                shadow_ratios.append(float(np.sum(r_patch < bg_thresh)) / r_patch.size)
+
+        # 2. Below shadow
+        sy0, sy1 = y1, min(img_h, y1 + max(h, 60))
+        if sy1 > sy0:
+            b_patch = gray[sy0:sy1, x0:x1]
+            if b_patch.size > 0:
+                shadow_ratios.append(float(np.sum(b_patch < bg_thresh)) / b_patch.size)
+
+        # 3. Left shadow
+        lx0, lx1 = max(0, x0 - max(w, 60)), x0
+        if lx1 > lx0:
+            l_patch = gray[y0:y1, lx0:lx1]
+            if l_patch.size > 0:
+                shadow_ratios.append(float(np.sum(l_patch < bg_thresh)) / l_patch.size)
+
+        return max(shadow_ratios) if shadow_ratios else 0.0
 
     @staticmethod
     def _classify(aspect_ratio: float, fill_ratio: float, shadow_ratio: float, area: float) -> str:

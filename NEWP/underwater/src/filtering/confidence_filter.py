@@ -61,8 +61,8 @@ def filter_detections(
             if det.w > int(img_w * 0.50):
                 continue
 
-            # 3. Suppress massive background boxes (> 25% total image area)
-            if (det.w * det.h) > int(0.25 * img_h * img_w):
+            # 3. Suppress full-frame background boxes (> 65% total image area)
+            if (det.w * det.h) > int(0.65 * img_h * img_w):
                 continue
 
         # Physical acoustic clutter suppression

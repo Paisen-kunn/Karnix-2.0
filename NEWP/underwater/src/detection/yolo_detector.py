@@ -126,13 +126,14 @@ class YOLOSonarDetector(BaseDetector):
                         )
                     )
 
-        # 3. Acoustic Salient Target Extraction (Finds prominent aircraft, shipwrecks, pipes, cylinders)
+        # 3. Acoustic Salient Structure Extraction
         salient_detections = self._extract_acoustic_salient_targets(gray_2d, norm_gray)
-        
-        # Merge salient detections with YOLO detections
-        all_detections = self._merge_proposals(detections, salient_detections)
 
-        return all_detections
+        # 4. Proximity & Structure Clustering (Unifies fragmented hull/wings/mast boxes into ONE complete box)
+        all_candidates = detections + salient_detections
+        unified_detections = self._cluster_and_unify_structures(all_candidates, gray_2d)
+
+        return unified_detections
 
     def _extract_acoustic_salient_targets(self, gray: np.ndarray, norm_gray: np.ndarray) -> list[Detection]:
         """
@@ -143,29 +144,30 @@ class YOLOSonarDetector(BaseDetector):
         img_area = h * w
         salient: list[Detection] = []
 
-        # Threshold prominent acoustic returns (top 5% intensity)
-        high_thresh = max(180, int(np.percentile(norm_gray, 95)))
+        bg_mean = np.mean(gray) or 1.0
+
+        # High-intensity highlight returns
+        high_thresh = max(160, int(np.percentile(norm_gray, 92)))
         _, highlight_mask = cv2.threshold(norm_gray, high_thresh, 255, cv2.THRESH_BINARY)
 
-        # Morphological grouping to merge structure fragments (e.g. wings + fuselage)
+        # Morphological closing to group structure highlights
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
-        highlight_mask = cv2.morphologyEx(highlight_mask, cv2.MORPH_CLOSE, kernel)
+        saliency_field = cv2.morphologyEx(highlight_mask, cv2.MORPH_CLOSE, kernel)
 
-        contours, _ = cv2.findContours(highlight_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(saliency_field, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         for cnt in contours:
             area = cv2.contourArea(cnt)
-            # Minimum target area threshold (350 px) to exclude tiny rock clutter
-            if area < 350 or area > img_area * 0.20:
+            if area < 120 or area > img_area * 0.35:
                 continue
 
             x, y, bw, bh = cv2.boundingRect(cnt)
 
             # Skip water-column surface return strip at top of scan
-            if y < int(h * 0.08) and bw > int(w * 0.30):
+            if y < int(h * 0.08) and bw > int(w * 0.35):
                 continue
             # Skip horizontal streak artifacts
-            if bw > int(w * 0.45) or (bh > 0 and bw / bh > 5.0 and bw > int(w * 0.25)):
+            if bw > int(w * 0.55) or (bh > 0 and bw / bh > 6.0 and bw > int(w * 0.30)):
                 continue
 
             ac_features = self._compute_acoustic_features(gray, x, y, bw, bh)
@@ -173,32 +175,17 @@ class YOLOSonarDetector(BaseDetector):
             contrast_ratio = ac_features["contrast_ratio"]
             snr_dB = ac_features["snr_dB"]
 
-            # Must cast a real acoustic shadow or have high SNR/contrast
-            if shadow_ratio < 0.10 and contrast_ratio < 1.30 and snr_dB < 7.0:
+            # Must have shadow, contrast, or SNR
+            if shadow_ratio < 0.08 and contrast_ratio < 1.20 and snr_dB < 6.0:
                 continue
 
-            aspect = bw / float(bh) if bh else 1.0
-            fill = area / float(bw * bh) if bw * bh else 0.5
-
-            # Classify target structure
-            if (aspect > 1.2 or aspect < 0.8) and area > 1000 and shadow_ratio > 0.12:
-                label = "shipwreck_plane"  # Aircraft / large structure
-            elif aspect > 3.0 or aspect < 0.33:
-                label = "pipe"
-            elif 0.7 <= aspect <= 1.4 and fill > 0.55:
-                label = "cylinder"
-            elif shadow_ratio > 0.25 and fill < 0.45:
-                label = "ghost_net"
-            else:
-                label = "shipwreck"
-
-            # Compute physical confidence score
-            conf = min(0.98, 0.35 + 0.35 * shadow_ratio + 0.15 * min(1.0, snr_dB / 15.0) + 0.15 * min(1.0, contrast_ratio / 2.0))
+            label = self._classify_structure(bw, bh, area, shadow_ratio)
+            conf = min(0.98, 0.40 + 0.35 * shadow_ratio + 0.15 * min(1.0, snr_dB / 15.0) + 0.10 * min(1.0, contrast_ratio / 2.0))
 
             features = {
                 "detector": "acoustic_saliency",
                 "area_px": float(area),
-                "aspect_ratio": round(aspect, 3),
+                "aspect_ratio": round(bw / float(bh) if bh else 1.0, 3),
             }
             features.update(ac_features)
 
@@ -213,53 +200,113 @@ class YOLOSonarDetector(BaseDetector):
 
         return salient
 
-    def _merge_proposals(self, yolo_dets: list[Detection], salient_dets: list[Detection]) -> list[Detection]:
-        """Merges YOLO proposals with acoustic salient proposals."""
-        merged = list(yolo_dets)
-        
-        for s_det in salient_dets:
-            matched = False
-            for i, y_det in enumerate(merged):
-                # Calculate IoU
-                ix1, iy1 = max(s_det.x, y_det.x), max(s_det.y, y_det.y)
-                ix2, iy2 = min(s_det.x + s_det.w, y_det.x + y_det.w), min(s_det.y + s_det.h, y_det.y + y_det.h)
-                iw, ih = max(0, ix2 - ix1), max(0, iy2 - iy1)
-                inter = iw * ih
-                union = s_det.w * s_det.h + y_det.w * y_det.h - inter
-                iou = inter / float(union) if union > 0 else 0.0
+    def _cluster_and_unify_structures(self, candidates: list[Detection], gray: np.ndarray) -> list[Detection]:
+        """
+        Clusters spatially close or overlapping candidate boxes (e.g. fragments of a large
+        shipwreck or aircraft) into a single, unified bounding box.
+        """
+        if not candidates:
+            return []
 
-                if iou > 0.15:
-                    # Enclose both boxes cleanly
-                    nx = min(s_det.x, y_det.x)
-                    ny = min(s_det.y, y_det.y)
-                    nw = max(s_det.x + s_det.w, y_det.x + y_det.w) - nx
-                    nh = max(s_det.y + s_det.h, y_det.y + y_det.h) - ny
-                    
-                    # Boost confidence when both detectors agree
-                    boosted_conf = min(0.99, max(s_det.confidence, y_det.confidence) + 0.15)
-                    best_label = s_det.label if "plane" in s_det.label or y_det.label == "debris" else y_det.label
+        img_h, img_w = gray.shape[:2]
+        max_merged_area = 0.50 * img_h * img_w
 
-                    features = dict(y_det.features)
-                    features.update(s_det.features)
-                    features["fusion_agreed"] = True
+        clusters: list[dict] = []
+        for det in candidates:
+            clusters.append({
+                "x1": det.x,
+                "y1": det.y,
+                "x2": det.x + det.w,
+                "y2": det.y + det.h,
+                "conf": det.confidence,
+                "label": det.label,
+                "features": det.features,
+            })
 
-                    merged[i] = Detection(
-                        x=nx, y=ny, w=nw, h=nh,
-                        label=best_label,
-                        confidence=boosted_conf,
-                        features=features,
-                    )
-                    matched = True
-                    break
+        changed = True
+        while changed:
+            changed = False
+            i = 0
+            while i < len(clusters):
+                j = i + 1
+                while j < len(clusters):
+                    c1, c2 = clusters[i], clusters[j]
 
-            if not matched:
-                merged.append(s_det)
+                    # Potential merged bounding box
+                    nx1 = min(c1["x1"], c2["x1"])
+                    ny1 = min(c1["y1"], c2["y1"])
+                    nx2 = max(c1["x2"], c2["x2"])
+                    ny2 = max(c1["y2"], c2["y2"])
+                    merged_area = (nx2 - nx1) * (ny2 - ny1)
 
-        return merged
+                    # Distance between two boxes
+                    dx = max(0, max(c1["x1"], c2["x1"]) - min(c1["x2"], c2["x2"]))
+                    dy = max(0, max(c1["y1"], c2["y1"]) - min(c1["y2"], c2["y2"]))
+
+                    # Merge if close (dx < 30 and dy < 30) AND merged area isn't the entire image
+                    if dx < 30 and dy < 30 and merged_area < max_merged_area:
+                        c1["x1"], c1["y1"] = nx1, ny1
+                        c1["x2"], c1["y2"] = nx2, ny2
+                        c1["conf"] = min(0.99, max(c1["conf"], c2["conf"]) + 0.10)
+                        
+                        if "shipwreck" in c2["label"] or "plane" in c2["label"]:
+                            c1["label"] = c2["label"]
+
+                        clusters.pop(j)
+                        changed = True
+                    else:
+                        j += 1
+                i += 1
+
+        unified: list[Detection] = []
+        for cl in clusters:
+            bx, by = cl["x1"], cl["y1"]
+            bw, bh = cl["x2"] - cl["x1"], cl["y2"] - cl["y1"]
+
+            ac_features = self._compute_acoustic_features(gray, bx, by, bw, bh)
+            label = self._classify_structure(bw, bh, bw * bh, ac_features["shadow_ratio"], cl["label"])
+
+            features = dict(cl["features"])
+            features.update(ac_features)
+
+            unified.append(
+                Detection(
+                    x=bx, y=by, w=bw, h=bh,
+                    label=label,
+                    confidence=cl["conf"],
+                    features=features,
+                )
+            )
+
+        return unified
+
+    @staticmethod
+    def _classify_structure(bw: int, bh: int, area: float, shadow_ratio: float, default_label: str = "shipwreck") -> str:
+        """Determines target classification based on structure scale and shape."""
+        # Any large target (> 1200 px or bw > 70 & bh > 70) is a Shipwreck / Aircraft structure!
+        if area > 1200 or (bw > 70 and bh > 70) or (bw > 120 or bh > 120) or shadow_ratio > 0.35:
+            if "plane" in default_label or "aircraft" in default_label:
+                return "shipwreck_plane"
+            return "shipwreck"
+
+        aspect = bw / float(bh) if bh else 1.0
+
+        # Pipes must be thin and elongated with small overall area
+        if (aspect > 3.2 or aspect < 0.31) and area < 1200 and max(bw, bh) < 180:
+            return "pipe"
+
+        # Cylinders must be compact
+        if 0.65 <= aspect <= 1.5 and area < 1500 and shadow_ratio < 0.25:
+            return "cylinder"
+
+        if shadow_ratio > 0.20 and area < 1000:
+            return "ghost_net"
+
+        return "shipwreck"
 
     @staticmethod
     def _compute_acoustic_features(gray: np.ndarray, x: int, y: int, w: int, h: int) -> dict:
-        """Calculates local acoustic backscatter, shadow ratio, and signal-to-noise ratio."""
+        """Calculates multi-directional acoustic backscatter, shadow ratio, and signal-to-noise ratio."""
         img_h, img_w = gray.shape[:2]
         x0, y0 = max(0, x), max(0, y)
         x1, y1 = min(img_w, x + w), min(img_h, y + h)
@@ -278,13 +325,31 @@ class YOLOSonarDetector(BaseDetector):
         bg_mean = float(np.mean(bg_patch)) if bg_patch.size > 0 else 1.0
         bg_std = float(np.std(bg_patch)) if bg_patch.size > 0 and np.std(bg_patch) > 1e-5 else 1.0
 
-        # Acoustic shadow patch directly behind object
-        sy0, sy1 = y1, min(img_h, y1 + int(h * 1.2))
-        shadow_patch = gray[sy0:sy1, x0:x1]
-        shadow_ratio = 0.0
-        if shadow_patch.size > 0:
-            dark_pixels = np.sum(shadow_patch < 0.5 * bg_mean)
-            shadow_ratio = float(dark_pixels) / shadow_patch.size
+        bg_thresh = 0.50 * bg_mean
+        shadow_ratios = []
+
+        # 1. Shadow to the Right (Starboard transducer shadow)
+        rx0, rx1 = x1, min(img_w, x1 + max(w, 80))
+        if rx1 > rx0:
+            r_patch = gray[y0:y1, rx0:rx1]
+            if r_patch.size > 0:
+                shadow_ratios.append(float(np.sum(r_patch < bg_thresh)) / r_patch.size)
+
+        # 2. Shadow Below (Waterfall track shadow)
+        sy0, sy1 = y1, min(img_h, y1 + max(h, 80))
+        if sy1 > sy0:
+            b_patch = gray[sy0:sy1, x0:x1]
+            if b_patch.size > 0:
+                shadow_ratios.append(float(np.sum(b_patch < bg_thresh)) / b_patch.size)
+
+        # 3. Shadow to the Left (Port transducer shadow)
+        lx0, lx1 = max(0, x0 - max(w, 80)), x0
+        if lx1 > lx0:
+            l_patch = gray[y0:y1, lx0:lx1]
+            if l_patch.size > 0:
+                shadow_ratios.append(float(np.sum(l_patch < bg_thresh)) / l_patch.size)
+
+        shadow_ratio = max(shadow_ratios) if shadow_ratios else 0.0
 
         contrast_ratio = target_mean / (bg_mean + 1e-5)
         snr_dB = 20.0 * np.log10((target_max - bg_mean) / bg_std + 1.0) if target_max > bg_mean else 0.0
