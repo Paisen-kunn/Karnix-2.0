@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.cache
+
+# Datasets and raw downloads
+data/raw/
+data/dataset_*/
+
+# Model training runs and large weights
+models/runs/
+*.pt
+
+# OS / IDE
+.DS_Store
+.vscode/

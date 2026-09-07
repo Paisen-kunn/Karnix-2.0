@@ -131,7 +131,7 @@ def _convert_voc_xml_to_yolo(xml_path: Path, img_width: int, img_height: int) ->
 
 def _extract_archives(raw_dir: Path):
     """Automatically extracts .zip, .tar, .tar.gz, .tgz archives found in raw_dir."""
-    zip_files = list(raw_dir.glob("**/*.zip"))
+    zip_files = list(raw_dir.rglob("*.zip"))
     for zf in zip_files:
         dest_dir = zf.parent / zf.stem
         if not dest_dir.exists() or not any(dest_dir.iterdir()):
@@ -142,7 +142,7 @@ def _extract_archives(raw_dir: Path):
             except Exception as e:
                 print(f"Warning: Failed to extract zip {zf}: {e}")
 
-    tar_files = list(raw_dir.glob("**/*.tar")) + list(raw_dir.glob("**/*.tar.gz")) + list(raw_dir.glob("**/*.tgz"))
+    tar_files = list(raw_dir.rglob("*.tar")) + list(raw_dir.rglob("*.tar.gz")) + list(raw_dir.rglob("*.tgz"))
     for tf in tar_files:
         dest_dir = tf.parent / tf.stem
         if not dest_dir.exists() or not any(dest_dir.iterdir()):
@@ -172,7 +172,7 @@ def format_dataset_to_yolo(raw_dir: Path, output_dir: Path) -> Path:
     _extract_archives(raw_dir)
 
     image_exts = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
-    image_files = [f for f in raw_dir.glob("**/*") if f.suffix.lower() in image_exts]
+    image_files = [f for f in raw_dir.rglob("*") if f.is_file() and f.suffix.lower() in image_exts]
 
     if not image_files:
         raise ValueError(f"No image files found in {raw_dir}")
@@ -201,13 +201,13 @@ def format_dataset_to_yolo(raw_dir: Path, output_dir: Path) -> Path:
         cv2.imwrite(str(dest_img_path), img)
 
         # Look for corresponding annotation XML or TXT
-        xml_candidates = list(raw_dir.glob(f"**/{img_path.stem}.xml"))
+        xml_candidates = list(raw_dir.rglob(f"{img_path.stem}.xml"))
         yolo_lines = []
 
         if xml_candidates:
             yolo_lines = _convert_voc_xml_to_yolo(xml_candidates[0], w, h)
         else:
-            txt_candidates = list(raw_dir.glob(f"**/{img_path.stem}.txt"))
+            txt_candidates = list(raw_dir.rglob(f"{img_path.stem}.txt"))
             if txt_candidates:
                 try:
                     yolo_lines = txt_candidates[0].read_text().strip().splitlines()
