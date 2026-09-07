@@ -11,8 +11,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from NEWP.SmartWarafare.backend.scheduler import SCHEDULERS
-from NEWP.SmartWarafare.backend.simulator import RFEnvironment
+from scheduler import SCHEDULERS
+from sensor import SENSOR_PD, SENSOR_PFA
+from simulator import RFEnvironment
 
 app = FastAPI(title="Smart Scan EW API")
 
@@ -22,10 +23,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Sensor characteristics (fixed for the demo receiver).
-SENSOR_PD = 0.92    # prob. of detecting a real transmission on the scanned band
-SENSOR_PFA = 0.03   # prob. of a false alarm when the scanned band is silent
 
 MAX_HISTORY = 200
 
@@ -70,8 +67,8 @@ class Simulation:
                 self.fn += 1
                 reward = -0.3
         else:
-            false_alarm = random.random() < SENSOR_PFA
-            if false_alarm:
+            detected = random.random() < SENSOR_PFA
+            if detected:
                 result = "FP"
                 self.fp += 1
                 reward = -0.5
@@ -80,7 +77,7 @@ class Simulation:
                 self.tn += 1
                 reward = -0.05
 
-        self.scheduler.update(band, reward)
+        self.scheduler.update(band, reward, detected)
         self.cumulative_reward += reward
         self.t += 1
 

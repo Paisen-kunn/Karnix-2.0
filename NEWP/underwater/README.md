@@ -33,6 +33,23 @@ Real labeled SSS datasets are large, restricted, and vendor-specific. AquaSentry
 
 All backends share the same `detect(image) -> list[Detection]` interface, making it trivial to add more detectors or upgrade existing ones.
 
+## 🧠 ML Model Training & Dataset Integration
+
+AquaSentry includes a complete ML training pipeline supporting benchmark datasets from **[Awesome-Sonar-Image-Resources](https://github.com/Jorwnpay/Awesome-Sonar-Image-Resources)** (SCTD, SeabedObjects, FLS-Detection, Marine-Debris-FLS) and synthetic sonar data:
+
+```bash
+# Train on synthetic sonar data (instant offline start):
+python3 scripts/train.py --dataset synthetic --epochs 10
+
+# Train on SCTD benchmark sonar dataset:
+python3 scripts/train.py --dataset sctd --epochs 20
+
+# Download benchmark sonar datasets without training:
+python3 scripts/download_sonar_datasets.py --dataset all
+```
+
+Trained model weights are automatically saved to `models/best_sonar_yolo.pt` and loaded by the detection pipeline. For details, see **[TRAINING.md](TRAINING.md)**.
+
 ## 📡 Pipeline Architecture
 
 | Stage | Module | Purpose |

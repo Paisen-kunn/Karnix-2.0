@@ -1,0 +1,11 @@
+names:
+  0: ghost_net
+  1: shipwreck
+  2: pipe
+  3: cylinder
+  4: debris
+  5: boat
+  6: plane
+path: /Users/sudharsans/Documents/Karniiix/NEWP/underwater/data/dataset_sctd
+train: images/train
+val: images/val

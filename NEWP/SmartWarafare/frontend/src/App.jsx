@@ -10,6 +10,7 @@ const SCHEDULER_LABELS = {
   random: 'Random (open-loop)',
   epsilon_greedy: 'Epsilon-Greedy (ML)',
   ucb1: 'UCB1 Bandit (ML)',
+  ml_predictor: 'Learned Predictor (offline-trained ML)',
 }
 
 export default function App() {

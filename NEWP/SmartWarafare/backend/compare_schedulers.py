@@ -12,14 +12,13 @@ import random
 
 import matplotlib.pyplot as plt
 
-from NEWP.SmartWarafare.backend.scheduler import SCHEDULERS
-from NEWP.SmartWarafare.backend.simulator import RFEnvironment
+from scheduler import SCHEDULERS
+from sensor import SENSOR_PD, SENSOR_PFA
+from simulator import RFEnvironment
 
 STEPS = 800
 NUM_BANDS = 16
 NUM_EMITTERS = 6
-SENSOR_PD = 0.92
-SENSOR_PFA = 0.03
 SEED = 42
 
 
@@ -43,14 +42,18 @@ def run(scheduler_name: str):
         if band_active and random.random() < SENSOR_PD:
             hits += 1
             step_reward = 1.0
+            detected = True
         elif not band_active and random.random() < SENSOR_PFA:
             step_reward = -0.5
+            detected = True
         elif band_active:
             step_reward = -0.3
+            detected = False
         else:
             step_reward = -0.05
+            detected = False
 
-        scheduler.update(band, step_reward)
+        scheduler.update(band, step_reward, detected)
         reward += step_reward
 
         cumulative_hits.append(hits)
@@ -65,6 +68,7 @@ def main():
         "round_robin": "Round Robin (open-loop)",
         "random": "Random (open-loop)",
         "ucb1": "UCB1 Bandit (ML / smart scan)",
+        "ml_predictor": "Learned Predictor (offline-trained ML)",
     }
 
     results = {name: run(name) for name in strategies}

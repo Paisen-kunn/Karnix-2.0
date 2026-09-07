@@ -39,21 +39,25 @@ def filter_detections(
     """Suppress natural-clutter false positives and duplicate/overlapping boxes.
 
     Rules applied (in order):
-      1. Reject boxes with no acoustic shadow AND low fill ratio (typical of sand ripples).
-      2. Reject boxes below the minimum confidence score.
+      1. Reject boxes below minimum confidence score threshold.
+      2. For classical heuristic detections: reject boxes with no acoustic shadow AND low fill ratio.
       3. Non-max suppression to collapse duplicate/overlapping boxes onto the best one.
     """
     survivors = []
     for det in detections:
-        shadow_ratio = det.features.get("shadow_ratio", 0.0)
-        fill_ratio = det.features.get("fill_ratio", 0.0)
-        if shadow_ratio < 0.05 and fill_ratio < 0.35:
-            continue  # looks like flat natural texture, not a proud object
         if det.confidence < min_confidence:
             continue
+
+        # Only apply physical clutter suppression if shadow_ratio AND fill_ratio are explicitly measured
+        shadow_ratio = det.features.get("shadow_ratio")
+        fill_ratio = det.features.get("fill_ratio")
+        if shadow_ratio is not None and fill_ratio is not None:
+            if shadow_ratio < 0.05 and fill_ratio < 0.35:
+                continue  # looks like flat natural texture, not a proud object
+
         survivors.append(det)
 
-    return _non_max_suppress(survivors)
+    return _non_max_suppress(survivors, iou_threshold=0.35)
 
 
 def confidence_percent(detections: list[Detection]) -> list[dict]:

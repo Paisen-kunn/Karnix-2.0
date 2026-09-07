@@ -1,0 +1,18 @@
+{
+  "status": "completed",
+  "model_name": "yolov8n.pt",
+  "epochs": 10,
+  "batch_size": 8,
+  "img_size": 640,
+  "device": "cpu",
+  "training_time_seconds": 290.33,
+  "dataset_yaml": "/Users/sudharsans/Documents/Karniiix/NEWP/underwater/data/dataset_synthetic/data.yaml",
+  "best_weights_path": "/Users/sudharsans/Documents/Karniiix/NEWP/underwater/models/best_sonar_yolo.pt",
+  "metrics": {
+    "metrics/precision(B)": 0.6442420572587411,
+    "metrics/recall(B)": 0.6216275338499653,
+    "metrics/mAP50(B)": 0.656599855637906,
+    "metrics/mAP50-95(B)": 0.6455790792656078,
+    "fitness": 0.6455790792656078
+  }
+}
