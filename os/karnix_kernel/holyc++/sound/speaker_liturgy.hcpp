@@ -1,0 +1,57 @@
+module KarnixSound;
+import KarnixCore;
+
+const SPEAKER_PORT : U16 = 0x61;
+const PIT_CHANNEL2_CMD : U16 = 0x43;
+const PIT_CHANNEL2_DAT : U16 = 0x42;
+
+class Note
+{
+    C4 = 262, D4 = 294, E4 = 330, F4 = 349, G4 = 392, A4 = 440, B4 = 494,
+    C5 = 523, D5 = 587, E5 = 659, F5 = 698, G5 = 784, A5 = 880, B5 = 988,
+};
+
+U0 SpeakerOn(U32 freq)
+{
+    if (freq == 0) return;
+    U32 div = 1193180 / freq;
+    OutB(PIT_CHANNEL2_CMD, 0xB6);
+    OutB(PIT_CHANNEL2_DAT, div & 0xFF);
+    OutB(PIT_CHANNEL2_DAT, (div >> 8) & 0xFF);
+    U8 tmp = InB(SPEAKER_PORT);
+    if (tmp != (tmp | 3)) OutB(SPEAKER_PORT, tmp | 3);
+}
+
+U0 SpeakerOff()
+{
+    U8 tmp = InB(SPEAKER_PORT) & ~3;
+    OutB(SPEAKER_PORT, tmp);
+}
+
+U0 BeepTicks(U32 freq, U32 ticks)
+{
+    SpeakerOn(freq);
+    U32 start = g_tick;
+    while (g_tick - start < ticks) Asm("sti" "hlt");
+    SpeakerOff();
+}
+
+U0 KeyClick()
+{
+    SpeakerOn(1800);
+    I32 i;
+    for (i = 0; i < 4000; i++) Asm("nop");
+    SpeakerOff();
+}
+
+U0 BootChime()
+{
+    BeepTicks(Note.C5, 8);
+    BeepTicks(Note.E5, 8);
+    BeepTicks(Note.G5, 18);
+}
+
+U0 EvalSuccessBeep()
+{
+    BeepTicks(900, 4);
+}

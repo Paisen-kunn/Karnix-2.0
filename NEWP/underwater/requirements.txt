@@ -1,0 +1,14 @@
+numpy>=1.24
+opencv-python-headless>=4.8
+scipy>=1.10
+flask>=3.0
+flask-cors>=4.0
+werkzeug>=3.0
+Pillow>=10.0
+
+# YOLO detection backend (optional, but recommended)
+ultralytics>=8.0
+
+# Optional: only needed to train/run the learned U-Net backend (src/detection/unet_model.py).
+# The classical detector, YOLO detector, and dashboard work fully without it.
+# torch>=2.1

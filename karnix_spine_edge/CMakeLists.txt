@@ -14,7 +14,6 @@ include_directories(
 # ── Target ────────────────────────────────────────────────────────────────────
 add_executable(spine_cli
     spine_cli.c++
-    medical/SpineCNN.cpp
     medical/SpineEvaluationUtils.cpp
 )
 

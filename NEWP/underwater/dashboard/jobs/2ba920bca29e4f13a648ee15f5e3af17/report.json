@@ -1,0 +1,447 @@
+{
+  "detections": [
+    {
+      "id": "det-0000",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.6027,
+      "confidence_percent": 60.3,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 729,
+        "y": 51,
+        "w": 276,
+        "h": 68
+      },
+      "size_m": {
+        "width": 12.349,
+        "height": 3.043
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 16207.5,
+        "aspect_ratio": 4.059,
+        "fill_ratio": 0.864,
+        "shadow_ratio": 0.004
+      }
+    },
+    {
+      "id": "det-0001",
+      "label": "unclassified_anomaly",
+      "confidence": 0.5875,
+      "confidence_percent": 58.7,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 958,
+        "y": 363,
+        "w": 236,
+        "h": 116
+      },
+      "size_m": {
+        "width": 10.559,
+        "height": 5.19
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 19209.5,
+        "aspect_ratio": 2.034,
+        "fill_ratio": 0.702,
+        "shadow_ratio": 0.036
+      }
+    },
+    {
+      "id": "det-0002",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.5548,
+      "confidence_percent": 55.5,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 54,
+        "y": 356,
+        "w": 302,
+        "h": 59
+      },
+      "size_m": {
+        "width": 13.512,
+        "height": 2.64
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 13348.5,
+        "aspect_ratio": 5.119,
+        "fill_ratio": 0.749,
+        "shadow_ratio": 0.017
+      }
+    },
+    {
+      "id": "det-0003",
+      "label": "unclassified_anomaly",
+      "confidence": 0.545,
+      "confidence_percent": 54.5,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 113,
+        "y": 215,
+        "w": 247,
+        "h": 71
+      },
+      "size_m": {
+        "width": 11.051,
+        "height": 3.177
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 12883.0,
+        "aspect_ratio": 3.479,
+        "fill_ratio": 0.735,
+        "shadow_ratio": 0.022
+      }
+    },
+    {
+      "id": "det-0004",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.5382,
+      "confidence_percent": 53.8,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 28,
+        "y": 639,
+        "w": 218,
+        "h": 60
+      },
+      "size_m": {
+        "width": 9.754,
+        "height": 2.685
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 10473.0,
+        "aspect_ratio": 3.633,
+        "fill_ratio": 0.801,
+        "shadow_ratio": 0.036
+      }
+    },
+    {
+      "id": "det-0005",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.5287,
+      "confidence_percent": 52.9,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 353,
+        "y": 51,
+        "w": 354,
+        "h": 69
+      },
+      "size_m": {
+        "width": 15.839,
+        "height": 3.087
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 15146.5,
+        "aspect_ratio": 5.13,
+        "fill_ratio": 0.62,
+        "shadow_ratio": 0.002
+      }
+    },
+    {
+      "id": "det-0006",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.5257,
+      "confidence_percent": 52.6,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 133,
+        "y": 923,
+        "w": 218,
+        "h": 57
+      },
+      "size_m": {
+        "width": 9.754,
+        "height": 2.55
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 10231.5,
+        "aspect_ratio": 3.825,
+        "fill_ratio": 0.823,
+        "shadow_ratio": 0.022
+      }
+    },
+    {
+      "id": "det-0007",
+      "label": "unclassified_anomaly",
+      "confidence": 0.5101,
+      "confidence_percent": 51.0,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 958,
+        "y": 297,
+        "w": 209,
+        "h": 60
+      },
+      "size_m": {
+        "width": 9.351,
+        "height": 2.685
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 9657.5,
+        "aspect_ratio": 3.483,
+        "fill_ratio": 0.77,
+        "shadow_ratio": 0.028
+      }
+    },
+    {
+      "id": "det-0008",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.4864,
+      "confidence_percent": 48.6,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 54,
+        "y": 292,
+        "w": 258,
+        "h": 56
+      },
+      "size_m": {
+        "width": 11.544,
+        "height": 2.506
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 9652.0,
+        "aspect_ratio": 4.607,
+        "fill_ratio": 0.668,
+        "shadow_ratio": 0.049
+      }
+    },
+    {
+      "id": "det-0009",
+      "label": "unclassified_anomaly",
+      "confidence": 0.4776,
+      "confidence_percent": 47.8,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 1046,
+        "y": 774,
+        "w": 179,
+        "h": 60
+      },
+      "size_m": {
+        "width": 8.009,
+        "height": 2.685
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 8216.5,
+        "aspect_ratio": 2.983,
+        "fill_ratio": 0.765,
+        "shadow_ratio": 0.015
+      }
+    },
+    {
+      "id": "det-0010",
+      "label": "unclassified_anomaly",
+      "confidence": 0.4755,
+      "confidence_percent": 47.5,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 131,
+        "y": 986,
+        "w": 239,
+        "h": 119
+      },
+      "size_m": {
+        "width": 10.694,
+        "height": 5.324
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 14378.5,
+        "aspect_ratio": 2.008,
+        "fill_ratio": 0.506,
+        "shadow_ratio": 0.0
+      }
+    },
+    {
+      "id": "det-0011",
+      "label": "unclassified_anomaly",
+      "confidence": 0.4681,
+      "confidence_percent": 46.8,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 928,
+        "y": 997,
+        "w": 282,
+        "h": 91
+      },
+      "size_m": {
+        "width": 12.617,
+        "height": 4.072
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 13479.0,
+        "aspect_ratio": 3.099,
+        "fill_ratio": 0.525,
+        "shadow_ratio": 0.0
+      }
+    },
+    {
+      "id": "det-0012",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.4676,
+      "confidence_percent": 46.8,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 54,
+        "y": 421,
+        "w": 245,
+        "h": 57
+      },
+      "size_m": {
+        "width": 10.962,
+        "height": 2.55
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 9708.5,
+        "aspect_ratio": 4.298,
+        "fill_ratio": 0.695,
+        "shadow_ratio": 0.0
+      }
+    },
+    {
+      "id": "det-0013",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.4502,
+      "confidence_percent": 45.0,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 29,
+        "y": 773,
+        "w": 213,
+        "h": 59
+      },
+      "size_m": {
+        "width": 9.53,
+        "height": 2.64
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 8692.0,
+        "aspect_ratio": 3.61,
+        "fill_ratio": 0.692,
+        "shadow_ratio": 0.0
+      }
+    },
+    {
+      "id": "det-0014",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.4384,
+      "confidence_percent": 43.8,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 1029,
+        "y": 709,
+        "w": 233,
+        "h": 61
+      },
+      "size_m": {
+        "width": 10.425,
+        "height": 2.729
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 8747.5,
+        "aspect_ratio": 3.82,
+        "fill_ratio": 0.615,
+        "shadow_ratio": 0.023
+      }
+    },
+    {
+      "id": "det-0015",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3934,
+      "confidence_percent": 39.3,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 166,
+        "y": 877,
+        "w": 207,
+        "h": 38
+      },
+      "size_m": {
+        "width": 9.262,
+        "height": 1.7
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 4972.5,
+        "aspect_ratio": 5.447,
+        "fill_ratio": 0.632,
+        "shadow_ratio": 0.039
+      }
+    },
+    {
+      "id": "det-0016",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3771,
+      "confidence_percent": 37.7,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 486,
+        "y": 125,
+        "w": 364,
+        "h": 36
+      },
+      "size_m": {
+        "width": 16.286,
+        "height": 1.611
+      },
+      "range_m": 30.0,
+      "image": "a0b938e1-e0e3-41e0-98af-6a1584138a37.png",
+      "features": {
+        "area_px": 7207.5,
+        "aspect_ratio": 10.111,
+        "fill_ratio": 0.55,
+        "shadow_ratio": 0.0
+      }
+    }
+  ],
+  "count": 17
+}

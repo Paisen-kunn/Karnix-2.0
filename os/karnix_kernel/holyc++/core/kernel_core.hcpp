@@ -1,0 +1,257 @@
+module KarnixCore;
+
+type U8   = uint8_t;
+type U16  = uint16_t;
+type U32  = uint32_t;
+type I8   = int8_t;
+type I16  = int16_t;
+type I32  = int32_t;
+type Bool = U8;
+
+const TRUE  : Bool = 1;
+const FALSE : Bool = 0;
+
+extern asm U0 OutB(U16 port, U8 val)
+{
+    "outb %al, %dx";
+}
+
+extern asm U8 InB(U16 port)
+{
+    "inb %dx, %al";
+}
+
+U0 IoWait()
+{
+    OutB(0x80, 0x00);
+}
+
+U0 DebugPuts(U8 *s)
+{
+    while (*s) { OutB(0xE9, *s); s++; }
+}
+
+const VGA_WIDTH  : I32 = 80;
+const VGA_HEIGHT : I32 = 25;
+const VGA_MEM    : U16* = 0xB8000;
+
+class VgaColor
+{
+    BLACK   = 0,  BLUE    = 1,  GREEN   = 2,  CYAN    = 3,
+    RED     = 4,  MAGENTA = 5,  BROWN   = 6,  LGRAY   = 7,
+    DGRAY   = 8,  LBLUE   = 9,  LGREEN  = 10, LCYAN   = 11,
+    LRED    = 12, LMAG    = 13, GOLD    = 14,
+    WHITE   = 15,
+};
+
+U16 g_shadow[VGA_HEIGHT * VGA_WIDTH];
+U16 g_committed[VGA_HEIGHT * VGA_WIDTH];
+
+#define SHADOW(row, col) g_shadow[(row) * VGA_WIDTH + (col)]
+
+U16 VgaEntry(U8 c, U8 fg, U8 bg)
+{
+    return c | ((bg << 4 | fg) << 8);
+}
+
+U0 VgaPutc(I32 col, I32 row, U8 c, U8 fg, U8 bg)
+{
+    if (col < 0 || col >= VGA_WIDTH || row < 0 || row >= VGA_HEIGHT) return;
+    SHADOW(row, col) = VgaEntry(c, fg, bg);
+}
+
+U0 VgaPuts(I32 col, I32 row, U8 *s, U8 fg, U8 bg, I32 maxw)
+{
+    I32 i = 0;
+    while (s[i] && (maxw < 0 || i < maxw)) { VgaPutc(col + i, row, s[i], fg, bg); i++; }
+}
+
+U0 VgaFill(I32 col, I32 row, I32 w, I32 h, U8 c, U8 fg, U8 bg)
+{
+    I32 r, x;
+    for (r = row; r < row + h; r++)
+        for (x = col; x < col + w; x++)
+            VgaPutc(x, r, c, fg, bg);
+}
+
+U0 VgaBox(I32 col, I32 row, I32 w, I32 h, U8 fg, U8 bg)
+{
+    I32 i;
+    VgaPutc(col,     row,     0xC9, fg, bg);
+    VgaPutc(col+w-1, row,     0xBB, fg, bg);
+    VgaPutc(col,     row+h-1, 0xC8, fg, bg);
+    VgaPutc(col+w-1, row+h-1, 0xBC, fg, bg);
+    for (i = 1; i < w-1; i++) { VgaPutc(col+i, row, 0xCD, fg, bg); VgaPutc(col+i, row+h-1, 0xCD, fg, bg); }
+    for (i = 1; i < h-1; i++) { VgaPutc(col, row+i, 0xBA, fg, bg); VgaPutc(col+w-1, row+i, 0xBA, fg, bg); }
+}
+
+U0 VgaFlush()
+{
+    I32 i;
+    for (i = 0; i < VGA_HEIGHT * VGA_WIDTH; i++) {
+        if (g_shadow[i] != g_committed[i]) {
+            VGA_MEM[i]     = g_shadow[i];
+            g_committed[i] = g_shadow[i];
+        }
+    }
+}
+
+U0 VgaCursorOff()
+{
+    OutB(0x3D4, 0x0A);
+    OutB(0x3D5, 0x20);
+}
+
+I32 KStrLen(U8 *s)          { I32 n = 0; while (s[n]) n++; return n; }
+I32 KStrCmp(U8 *a, U8 *b)   { while (*a && *a == *b) { a++; b++; } return *a - *b; }
+U8 *KStrCpy(U8 *d, U8 *s)   { U8 *r = d; while ((*d++ = *s++)); return r; }
+
+U0 KItoA(I32 val, U8 *buf)
+{
+    if (val == 0) { buf[0] = '0'; buf[1] = 0; return; }
+    U8 tmp[16]; I32 i = 0, neg = 0;
+    if (val < 0) { neg = 1; val = -val; }
+    while (val > 0) { tmp[i++] = '0' + (val % 10); val /= 10; }
+    if (neg) tmp[i++] = '-';
+    I32 j; for (j = 0; j < i; j++) buf[j] = tmp[i-1-j];
+    buf[i] = 0;
+}
+
+class GdtEntry
+{
+    U16 limLo;
+    U16 baseLo;
+    U8  baseMid;
+    U8  access;
+    U8  gran;
+    U8  baseHi;
+} PACKED;
+
+class GdtPtr { U16 limit; U32 base; } PACKED;
+
+GdtEntry gdt[3];
+GdtPtr   gdtPtr;
+
+U0 GdtSet(I32 i, U32 base, U32 lim, U8 access, U8 gran)
+{
+    gdt[i].baseLo  = base & 0xFFFF;
+    gdt[i].baseMid = (base >> 16) & 0xFF;
+    gdt[i].baseHi  = (base >> 24) & 0xFF;
+    gdt[i].limLo   = lim & 0xFFFF;
+    gdt[i].gran    = ((lim >> 16) & 0x0F) | gran;
+    gdt[i].access  = access;
+}
+
+extern asm U0 GdtFlush(GdtPtr *p)
+{
+    "lgdtl (%eax)";
+    "reload segment registers, far-jump into 0x08:code";
+}
+
+U0 GdtInit()
+{
+    GdtSet(0, 0, 0, 0, 0);
+    GdtSet(1, 0, 0xFFFFF, 0x9A, 0xCF);
+    GdtSet(2, 0, 0xFFFFF, 0x92, 0xCF);
+    gdtPtr.limit = sizeof(gdt) - 1;
+    gdtPtr.base  = &gdt;
+    GdtFlush(&gdtPtr);
+}
+
+class IdtEntry
+{
+    U16 offLo;
+    U16 sel;
+    U8  zero;
+    U8  flags;
+    U16 offHi;
+} PACKED;
+
+class IdtPtr { U16 limit; U32 base; } PACKED;
+
+IdtEntry idt[256];
+IdtPtr   idtPtr;
+const IRQ_BASE : I32 = 0x20;
+U32 g_tick = 0;
+
+U0 IdtSet(I32 n, U32 base, U8 flags)
+{
+    idt[n].offLo = base & 0xFFFF;
+    idt[n].offHi = (base >> 16) & 0xFFFF;
+    idt[n].sel   = 0x08;
+    idt[n].zero  = 0;
+    idt[n].flags = flags;
+}
+
+extern U0 IsrIrq0();
+extern U0 IsrIrq1();
+extern U0 IsrIrq12();
+extern U0 IsrDummy();
+
+U0 IdtInit()
+{
+    U32 dummy = &IsrDummy;
+    I32 i;
+    for (i = 0; i < 256; i++) IdtSet(i, dummy, 0x8E);
+    IdtSet(IRQ_BASE + 0,  &IsrIrq0,  0x8E);
+    IdtSet(IRQ_BASE + 1,  &IsrIrq1,  0x8E);
+    IdtSet(IRQ_BASE + 12, &IsrIrq12, 0x8E);
+    idtPtr.limit = sizeof(idt) - 1;
+    idtPtr.base  = &idt;
+    Asm("lidtl (%0)" : : "r"(&idtPtr));
+}
+
+const PIC1_CMD : U16 = 0x20;  const PIC1_DATA : U16 = 0x21;
+const PIC2_CMD : U16 = 0xA0;  const PIC2_DATA : U16 = 0xA1;
+const PIC_EOI  : U8  = 0x20;
+
+U0 PicInit()
+{
+    OutB(PIC1_CMD, 0x11); IoWait();
+    OutB(PIC2_CMD, 0x11); IoWait();
+    OutB(PIC1_DATA, 0x20); IoWait();
+    OutB(PIC2_DATA, 0x28); IoWait();
+    OutB(PIC1_DATA, 0x04); IoWait();
+    OutB(PIC2_DATA, 0x02); IoWait();
+    OutB(PIC1_DATA, 0x01); IoWait();
+    OutB(PIC2_DATA, 0x01); IoWait();
+    OutB(PIC1_DATA, 0xF8);
+    OutB(PIC2_DATA, 0xEF);
+}
+
+U0 PicEoi(U8 irq)
+{
+    if (irq >= 8) OutB(PIC2_CMD, PIC_EOI);
+    OutB(PIC1_CMD, PIC_EOI);
+}
+
+const PIT_HZ  : I32 = 100;
+const PIT_DIV : I32 = 1193180 / PIT_HZ;
+
+U0 PitInit()
+{
+    OutB(0x43, 0x36);
+    OutB(0x40, PIT_DIV & 0xFF);
+    OutB(0x40, (PIT_DIV >> 8) & 0xFF);
+}
+
+U0 Irq0Handler()
+{
+    g_tick++;
+    PicEoi(0);
+}
+
+U0 KernelBootSequence()
+{
+    U16 blank = VgaEntry(' ', VgaColor.WHITE, VgaColor.BLACK);
+    I32 i;
+    for (i = 0; i < VGA_HEIGHT * VGA_WIDTH; i++) {
+        g_shadow[i] = blank; g_committed[i] = blank; VGA_MEM[i] = blank;
+    }
+    VgaCursorOff();
+    GdtInit();
+    IdtInit();
+    PicInit();
+    PitInit();
+    Asm("sti");
+}

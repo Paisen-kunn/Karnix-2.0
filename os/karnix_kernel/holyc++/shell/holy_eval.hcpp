@@ -1,0 +1,114 @@
+module KarnixShell;
+import KarnixCore;
+import KarnixSound;
+
+const CMD_MAX : I32 = 72;
+
+U8  gCmd[CMD_MAX + 1];
+I32 gCmdLen = 0;
+
+const LOG_MAX : I32 = 8;
+U8  gLog[LOG_MAX][72];
+I32 gLogHead = 0, gLogCount = 0;
+
+U0 LogPush(U8 *s)
+{
+    I32 i = gLogHead, n = 0;
+    while (s[n] && n < 71) { gLog[i][n] = s[n]; n++; }
+    gLog[i][n] = 0;
+    gLogHead = (gLogHead + 1) % LOG_MAX;
+    if (gLogCount < LOG_MAX) gLogCount++;
+}
+
+U8  *gEvalP;
+Bool gEvalErr;
+
+U0 EvalSkipSpace() { while (*gEvalP == ' ') gEvalP++; }
+
+I32 EvalFactor();
+
+I32 EvalPrimary()
+{
+    EvalSkipSpace();
+    if (*gEvalP == '(') {
+        gEvalP++;
+        I32 v = EvalFactor();
+        EvalSkipSpace();
+        if (*gEvalP == ')') gEvalP++; else gEvalErr = TRUE;
+        return v;
+    }
+    if (*gEvalP == '-') { gEvalP++; return -EvalFactor(); }
+
+    I32 v = 0; Bool any = FALSE;
+    while (*gEvalP >= '0' && *gEvalP <= '9') { v = v * 10 + (*gEvalP - '0'); gEvalP++; any = TRUE; }
+    if (!any) gEvalErr = TRUE;
+    return v;
+}
+
+I32 EvalTerm()
+{
+    I32 v = EvalPrimary();
+    while (TRUE) {
+        EvalSkipSpace();
+        if (*gEvalP == '*') { gEvalP++; v *= EvalPrimary(); }
+        else if (*gEvalP == '/') {
+            gEvalP++;
+            I32 d = EvalPrimary();
+            if (d == 0) { gEvalErr = TRUE; v = 0; } else v /= d;
+        } else break;
+    }
+    return v;
+}
+
+I32 EvalFactor()
+{
+    I32 v = EvalTerm();
+    while (TRUE) {
+        EvalSkipSpace();
+        if      (*gEvalP == '+') { gEvalP++; v += EvalTerm(); }
+        else if (*gEvalP == '-') { gEvalP++; v -= EvalTerm(); }
+        else break;
+    }
+    return v;
+}
+
+Bool HolyEval(U8 *expr, I32 *out)
+{
+    gEvalP = expr;
+    gEvalErr = FALSE;
+    I32 v = EvalFactor();
+    EvalSkipSpace();
+    if (*gEvalP != 0) gEvalErr = TRUE;
+    *out = v;
+    return !gEvalErr;
+}
+
+U0 ExecCmd()
+{
+    U8 *cmd = gCmd;
+    if (!cmd[0]) return;
+
+    if (KStrCmp(cmd, "help") == 0) {
+        LogPush("scan dir uci stats db risk sel info heatmap back");
+        LogPush("spine3d  clear  quit  calc <expr>  paint");
+    }
+    else if (StartsWith(cmd, "calc ")) {
+        I32 result;
+        if (HolyEval(cmd + 5, &result)) {
+            U8 buf[72];
+            KStrCpy(buf, "= ");
+            KItoA(result, buf + 2);
+            LogPush(buf);
+            EvalSuccessBeep();
+        } else {
+            LogPush("calc: syntax error");
+        }
+    }
+    else if (KStrCmp(cmd, "paint") == 0) {
+        SetView(VIEW_PAINT);
+        LogPush("Holy Paint opened  0-9/A-F=colour Space=paint Del=clear Esc=back");
+    }
+
+    gCmd[0] = 0;
+    gCmdLen = 0;
+}

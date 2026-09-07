@@ -1,0 +1,91 @@
+module KarnixGraphics;
+import KarnixCore;
+import KarnixInput;
+
+const CANVAS_W : I32 = VGA_WIDTH;
+const CANVAS_H : I32 = VGA_HEIGHT - 3;
+
+U8  gCanvas[CANVAS_H][CANVAS_W];
+I32 gPaintCx = CANVAS_W / 2, gPaintCy = CANVAS_H / 2;
+U8  gPaintColor = VgaColor.GOLD;
+
+enum ViewMode
+{
+    VIEW_DASHBOARD = 0,
+    VIEW_HEATMAP   = 1,
+    VIEW_PAINT     = 2,
+};
+
+I32 gView = VIEW_DASHBOARD;
+
+U0 SetView(I32 v) { gView = v; }
+
+U0 PaintClear()
+{
+    I32 x, y;
+    for (y = 0; y < CANVAS_H; y++)
+        for (x = 0; x < CANVAS_W; x++)
+            gCanvas[y][x] = VgaColor.BLACK;
+}
+
+U0 PaintPixel(I32 x, I32 y, U8 color)
+{
+    if (x < 0 || x >= CANVAS_W || y < 0 || y >= CANVAS_H) return;
+    gCanvas[y][x] = color;
+}
+
+U0 RenderPaint()
+{
+    VgaFill(0, 0, VGA_WIDTH, 1, ' ', VgaColor.WHITE, VgaColor.LBLUE);
+    VgaPuts(1, 0, "HOLY PAINT/", VgaColor.GOLD, VgaColor.LBLUE, 11);
+    VgaPuts(13, 0, "0-9/A-F=colour  Space/Click=paint  Del=clear  Esc=back",
+            VgaColor.WHITE, VgaColor.LBLUE, 60);
+
+    I32 x, y;
+    for (y = 0; y < CANVAS_H; y++)
+        for (x = 0; x < CANVAS_W; x++)
+            VgaPutc(x, 1 + y, 0xDB, gCanvas[y][x], VgaColor.BLACK);
+
+    U8 curFg = (gPaintColor == VgaColor.WHITE) ? VgaColor.BLACK : VgaColor.WHITE;
+    VgaPutc(gPaintCx, 1 + gPaintCy, 0xDB, curFg, gPaintColor);
+
+    VgaFill(0, VGA_HEIGHT - 2, VGA_WIDTH, 1, ' ', VgaColor.LGRAY, VgaColor.BLACK);
+    I32 c;
+    for (c = 0; c < 16; c++) {
+        VgaPutc(1 + c * 2, VGA_HEIGHT - 2, 0xDB, c, VgaColor.BLACK);
+        if (c == gPaintColor) VgaPutc(1 + c * 2, VGA_HEIGHT - 2, '^', VgaColor.WHITE, VgaColor.BLACK);
+    }
+    VgaPuts(36, VGA_HEIGHT - 2, "gold(E)=Yellow blue(1)=Blue white(F)=White",
+            VgaColor.LGRAY, VgaColor.BLACK, 43);
+
+    RenderCmdBar();
+    RenderMouse();
+    VgaFlush();
+}
+
+U0 HandlePaintKey(U8 c)
+{
+    if      (c >= '0' && c <= '9') gPaintColor = c - '0';
+    else if (c >= 'a' && c <= 'f') gPaintColor = 10 + (c - 'a');
+    else if (c >= 'A' && c <= 'F') gPaintColor = 10 + (c - 'A');
+    else if (c == ' ')             PaintPixel(gPaintCx, gPaintCy, gPaintColor);
+}
+
+U0 HandlePaintSpecial(U8 sp)
+{
+    if      (sp == KEY_LEFT)  { if (gPaintCx > 0)            gPaintCx--; }
+    else if (sp == KEY_RIGHT) { if (gPaintCx < CANVAS_W - 1) gPaintCx++; }
+    else if (sp == KEY_UP)    { if (gPaintCy > 0)            gPaintCy--; }
+    else if (sp == KEY_DOWN)  { if (gPaintCy < CANVAS_H - 1) gPaintCy++; }
+    else if (sp == KEY_DEL)   { PaintClear(); LogPush("Canvas cleared."); }
+    else if (sp == KEY_ESC)   { SetView(VIEW_DASHBOARD); LogPush("Holy Paint closed."); }
+}
+
+U0 HandlePaintClick(I32 mx, I32 my)
+{
+    if (my >= 1 && my <= CANVAS_H && mx < CANVAS_W) {
+        gPaintCx = mx;
+        gPaintCy = my - 1;
+        PaintPixel(gPaintCx, gPaintCy, gPaintColor);
+    }
+}

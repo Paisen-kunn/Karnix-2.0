@@ -1,0 +1,837 @@
+{
+  "detections": [
+    {
+      "id": "det-0000",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.8641,
+      "confidence_percent": 86.4,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 37,
+        "y": 0,
+        "w": 16,
+        "h": 125
+      },
+      "size_m": {
+        "width": 1.301,
+        "height": 10.163
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 1846.5,
+        "aspect_ratio": 0.128,
+        "fill_ratio": 0.923,
+        "shadow_ratio": 0.636
+      }
+    },
+    {
+      "id": "det-0001",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.8388,
+      "confidence_percent": 83.9,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 590,
+        "y": 0,
+        "w": 12,
+        "h": 126
+      },
+      "size_m": {
+        "width": 0.976,
+        "height": 10.244
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 1237.0,
+        "aspect_ratio": 0.095,
+        "fill_ratio": 0.818,
+        "shadow_ratio": 0.77
+      }
+    },
+    {
+      "id": "det-0002",
+      "label": "unclassified_anomaly",
+      "confidence": 0.6048,
+      "confidence_percent": 60.5,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 503,
+        "y": 371,
+        "w": 22,
+        "h": 7
+      },
+      "size_m": {
+        "width": 1.789,
+        "height": 0.569
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 93.5,
+        "aspect_ratio": 3.143,
+        "fill_ratio": 0.607,
+        "shadow_ratio": 0.526
+      }
+    },
+    {
+      "id": "det-0003",
+      "label": "unclassified_anomaly",
+      "confidence": 0.5783,
+      "confidence_percent": 57.8,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 308,
+        "y": 412,
+        "w": 25,
+        "h": 9
+      },
+      "size_m": {
+        "width": 2.033,
+        "height": 0.732
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 148.5,
+        "aspect_ratio": 2.778,
+        "fill_ratio": 0.66,
+        "shadow_ratio": 0.444
+      }
+    },
+    {
+      "id": "det-0004",
+      "label": "unclassified_anomaly",
+      "confidence": 0.5568,
+      "confidence_percent": 55.7,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 421,
+        "y": 411,
+        "w": 16,
+        "h": 9
+      },
+      "size_m": {
+        "width": 1.301,
+        "height": 0.732
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 73.0,
+        "aspect_ratio": 1.778,
+        "fill_ratio": 0.507,
+        "shadow_ratio": 0.507
+      }
+    },
+    {
+      "id": "det-0005",
+      "label": "unclassified_anomaly",
+      "confidence": 0.5561,
+      "confidence_percent": 55.6,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 159,
+        "y": 0,
+        "w": 145,
+        "h": 215
+      },
+      "size_m": {
+        "width": 11.789,
+        "height": 17.48
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 15677.0,
+        "aspect_ratio": 0.674,
+        "fill_ratio": 0.503,
+        "shadow_ratio": 0.1
+      }
+    },
+    {
+      "id": "det-0006",
+      "label": "unclassified_anomaly",
+      "confidence": 0.5436,
+      "confidence_percent": 54.4,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 22,
+        "y": 445,
+        "w": 15,
+        "h": 7
+      },
+      "size_m": {
+        "width": 1.22,
+        "height": 0.569
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 53.5,
+        "aspect_ratio": 2.143,
+        "fill_ratio": 0.51,
+        "shadow_ratio": 0.486
+      }
+    },
+    {
+      "id": "det-0007",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.5224,
+      "confidence_percent": 52.2,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 626,
+        "y": 151,
+        "w": 3,
+        "h": 44
+      },
+      "size_m": {
+        "width": 0.244,
+        "height": 3.577
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 86.0,
+        "aspect_ratio": 0.068,
+        "fill_ratio": 0.652,
+        "shadow_ratio": 0.364
+      }
+    },
+    {
+      "id": "det-0008",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.5084,
+      "confidence_percent": 50.8,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 105,
+        "y": 0,
+        "w": 18,
+        "h": 124
+      },
+      "size_m": {
+        "width": 1.463,
+        "height": 10.081
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 1333.5,
+        "aspect_ratio": 0.145,
+        "fill_ratio": 0.597,
+        "shadow_ratio": 0.223
+      }
+    },
+    {
+      "id": "det-0009",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.4986,
+      "confidence_percent": 49.9,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 455,
+        "y": 0,
+        "w": 4,
+        "h": 122
+      },
+      "size_m": {
+        "width": 0.325,
+        "height": 9.919
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 362.5,
+        "aspect_ratio": 0.033,
+        "fill_ratio": 0.743,
+        "shadow_ratio": 0.238
+      }
+    },
+    {
+      "id": "det-0010",
+      "label": "entangled_debris_net",
+      "confidence": 0.46,
+      "confidence_percent": 46.0,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 411,
+        "y": 392,
+        "w": 41,
+        "h": 19
+      },
+      "size_m": {
+        "width": 3.333,
+        "height": 1.545
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 342.0,
+        "aspect_ratio": 2.158,
+        "fill_ratio": 0.439,
+        "shadow_ratio": 0.353
+      }
+    },
+    {
+      "id": "det-0011",
+      "label": "unclassified_anomaly",
+      "confidence": 0.4573,
+      "confidence_percent": 45.7,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 688,
+        "y": 0,
+        "w": 50,
+        "h": 135
+      },
+      "size_m": {
+        "width": 4.065,
+        "height": 10.976
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 2456.0,
+        "aspect_ratio": 0.37,
+        "fill_ratio": 0.364,
+        "shadow_ratio": 0.14
+      }
+    },
+    {
+      "id": "det-0012",
+      "label": "unclassified_anomaly",
+      "confidence": 0.4463,
+      "confidence_percent": 44.6,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 464,
+        "y": 0,
+        "w": 120,
+        "h": 269
+      },
+      "size_m": {
+        "width": 9.756,
+        "height": 21.87
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 8275.5,
+        "aspect_ratio": 0.446,
+        "fill_ratio": 0.256,
+        "shadow_ratio": 0.061
+      }
+    },
+    {
+      "id": "det-0013",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.439,
+      "confidence_percent": 43.9,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 367,
+        "y": 0,
+        "w": 18,
+        "h": 131
+      },
+      "size_m": {
+        "width": 1.463,
+        "height": 10.65
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 1194.0,
+        "aspect_ratio": 0.137,
+        "fill_ratio": 0.506,
+        "shadow_ratio": 0.177
+      }
+    },
+    {
+      "id": "det-0014",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.4274,
+      "confidence_percent": 42.7,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 429,
+        "y": 0,
+        "w": 7,
+        "h": 123
+      },
+      "size_m": {
+        "width": 0.569,
+        "height": 10.0
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 710.0,
+        "aspect_ratio": 0.057,
+        "fill_ratio": 0.825,
+        "shadow_ratio": 0.044
+      }
+    },
+    {
+      "id": "det-0015",
+      "label": "unclassified_anomaly",
+      "confidence": 0.4255,
+      "confidence_percent": 42.5,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 171,
+        "y": 221,
+        "w": 50,
+        "h": 129
+      },
+      "size_m": {
+        "width": 4.065,
+        "height": 10.488
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 2269.5,
+        "aspect_ratio": 0.388,
+        "fill_ratio": 0.352,
+        "shadow_ratio": 0.116
+      }
+    },
+    {
+      "id": "det-0016",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.4243,
+      "confidence_percent": 42.4,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 269,
+        "y": 0,
+        "w": 4,
+        "h": 118
+      },
+      "size_m": {
+        "width": 0.325,
+        "height": 9.593
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 346.5,
+        "aspect_ratio": 0.034,
+        "fill_ratio": 0.734,
+        "shadow_ratio": 0.121
+      }
+    },
+    {
+      "id": "det-0017",
+      "label": "entangled_debris_net",
+      "confidence": 0.4007,
+      "confidence_percent": 40.1,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 541,
+        "y": 435,
+        "w": 18,
+        "h": 17
+      },
+      "size_m": {
+        "width": 1.463,
+        "height": 1.382
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 78.5,
+        "aspect_ratio": 1.059,
+        "fill_ratio": 0.257,
+        "shadow_ratio": 0.392
+      }
+    },
+    {
+      "id": "det-0018",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3976,
+      "confidence_percent": 39.8,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 480,
+        "y": 0,
+        "w": 6,
+        "h": 121
+      },
+      "size_m": {
+        "width": 0.488,
+        "height": 9.837
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 572.0,
+        "aspect_ratio": 0.05,
+        "fill_ratio": 0.788,
+        "shadow_ratio": 0.018
+      }
+    },
+    {
+      "id": "det-0019",
+      "label": "unclassified_anomaly",
+      "confidence": 0.3891,
+      "confidence_percent": 38.9,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 403,
+        "y": 428,
+        "w": 27,
+        "h": 12
+      },
+      "size_m": {
+        "width": 2.195,
+        "height": 0.976
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 217.5,
+        "aspect_ratio": 2.25,
+        "fill_ratio": 0.671,
+        "shadow_ratio": 0.114
+      }
+    },
+    {
+      "id": "det-0020",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3824,
+      "confidence_percent": 38.2,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 661,
+        "y": 0,
+        "w": 5,
+        "h": 122
+      },
+      "size_m": {
+        "width": 0.407,
+        "height": 9.919
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 484.0,
+        "aspect_ratio": 0.041,
+        "fill_ratio": 0.793,
+        "shadow_ratio": 0.0
+      }
+    },
+    {
+      "id": "det-0021",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3821,
+      "confidence_percent": 38.2,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 663,
+        "y": 390,
+        "w": 75,
+        "h": 18
+      },
+      "size_m": {
+        "width": 6.098,
+        "height": 1.463
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 737.5,
+        "aspect_ratio": 4.167,
+        "fill_ratio": 0.546,
+        "shadow_ratio": 0.113
+      }
+    },
+    {
+      "id": "det-0022",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3809,
+      "confidence_percent": 38.1,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 651,
+        "y": 0,
+        "w": 5,
+        "h": 124
+      },
+      "size_m": {
+        "width": 0.407,
+        "height": 10.081
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 260.5,
+        "aspect_ratio": 0.04,
+        "fill_ratio": 0.42,
+        "shadow_ratio": 0.242
+      }
+    },
+    {
+      "id": "det-0023",
+      "label": "unclassified_anomaly",
+      "confidence": 0.379,
+      "confidence_percent": 37.9,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 408,
+        "y": 274,
+        "w": 90,
+        "h": 102
+      },
+      "size_m": {
+        "width": 7.317,
+        "height": 8.293
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 2100.5,
+        "aspect_ratio": 0.882,
+        "fill_ratio": 0.229,
+        "shadow_ratio": 0.13
+      }
+    },
+    {
+      "id": "det-0024",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3764,
+      "confidence_percent": 37.6,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 135
+      },
+      "size_m": {
+        "width": 3.008,
+        "height": 10.976
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 1665.5,
+        "aspect_ratio": 0.274,
+        "fill_ratio": 0.333,
+        "shadow_ratio": 0.117
+      }
+    },
+    {
+      "id": "det-0025",
+      "label": "unclassified_anomaly",
+      "confidence": 0.3758,
+      "confidence_percent": 37.6,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 280,
+        "y": 223,
+        "w": 44,
+        "h": 147
+      },
+      "size_m": {
+        "width": 3.577,
+        "height": 11.951
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 2318.0,
+        "aspect_ratio": 0.299,
+        "fill_ratio": 0.358,
+        "shadow_ratio": 0.023
+      }
+    },
+    {
+      "id": "det-0026",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3645,
+      "confidence_percent": 36.4,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 589,
+        "y": 277,
+        "w": 9,
+        "h": 77
+      },
+      "size_m": {
+        "width": 0.732,
+        "height": 6.26
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 510.5,
+        "aspect_ratio": 0.117,
+        "fill_ratio": 0.737,
+        "shadow_ratio": 0.0
+      }
+    },
+    {
+      "id": "det-0027",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3553,
+      "confidence_percent": 35.5,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 143,
+        "y": 0,
+        "w": 4,
+        "h": 119
+      },
+      "size_m": {
+        "width": 0.325,
+        "height": 9.675
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 353.5,
+        "aspect_ratio": 0.034,
+        "fill_ratio": 0.743,
+        "shadow_ratio": 0.0
+      }
+    },
+    {
+      "id": "det-0028",
+      "label": "unclassified_anomaly",
+      "confidence": 0.3524,
+      "confidence_percent": 35.2,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 417,
+        "y": 358,
+        "w": 9,
+        "h": 15
+      },
+      "size_m": {
+        "width": 0.732,
+        "height": 1.22
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 96.0,
+        "aspect_ratio": 0.6,
+        "fill_ratio": 0.711,
+        "shadow_ratio": 0.044
+      }
+    },
+    {
+      "id": "det-0029",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3521,
+      "confidence_percent": 35.2,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 528,
+        "y": 0,
+        "w": 4,
+        "h": 116
+      },
+      "size_m": {
+        "width": 0.325,
+        "height": 9.431
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 341.5,
+        "aspect_ratio": 0.034,
+        "fill_ratio": 0.736,
+        "shadow_ratio": 0.0
+      }
+    },
+    {
+      "id": "det-0030",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3519,
+      "confidence_percent": 35.2,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 60,
+        "y": 0,
+        "w": 25,
+        "h": 209
+      },
+      "size_m": {
+        "width": 2.033,
+        "height": 16.992
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 1635.5,
+        "aspect_ratio": 0.12,
+        "fill_ratio": 0.313,
+        "shadow_ratio": 0.092
+      }
+    },
+    {
+      "id": "det-0031",
+      "label": "elongated_object_pipe_or_net",
+      "confidence": 0.3502,
+      "confidence_percent": 35.0,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 699,
+        "y": 141,
+        "w": 5,
+        "h": 56
+      },
+      "size_m": {
+        "width": 0.407,
+        "height": 4.553
+      },
+      "range_m": 30.0,
+      "image": "Screenshot 2026-09-04 at 9.00.13\u202fPM.png",
+      "features": {
+        "area_px": 212.0,
+        "aspect_ratio": 0.089,
+        "fill_ratio": 0.757,
+        "shadow_ratio": 0.0
+      }
+    }
+  ],
+  "count": 32
+}

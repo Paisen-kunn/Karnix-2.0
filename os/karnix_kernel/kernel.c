@@ -296,6 +296,44 @@ void irq0_handler(void) {
 }
 
 /* ============================================================
+   PC Speaker – TempleOS-style boot chime + key click
+   ============================================================ */
+#define SPEAKER_PORT 0x61
+
+static void speaker_on(uint32_t freq) {
+    if (freq == 0) return;
+    uint32_t div = 1193180u / freq;
+    outb(0x43, 0xB6);
+    outb(0x42, (uint8_t)(div & 0xFF));
+    outb(0x42, (uint8_t)((div >> 8) & 0xFF));
+    uint8_t tmp = inb(SPEAKER_PORT);
+    if (tmp != (uint8_t)(tmp | 3)) outb(SPEAKER_PORT, (uint8_t)(tmp | 3));
+}
+static void speaker_off(void) {
+    uint8_t tmp = inb(SPEAKER_PORT) & 0xFC;
+    outb(SPEAKER_PORT, tmp);
+}
+/* Blocking beep, length measured in PIT ticks (100/sec) */
+static void beep_ticks(uint32_t freq, uint32_t ticks) {
+    speaker_on(freq);
+    uint32_t start = g_tick;
+    while (g_tick - start < ticks) { __asm__ volatile ("sti\n\thlt\n" ::: "memory"); }
+    speaker_off();
+}
+/* Short non-blocking click heard on every keypress */
+static void key_click(void) {
+    speaker_on(1800);
+    for (volatile int i = 0; i < 4000; i++) { __asm__ volatile ("nop"); }
+    speaker_off();
+}
+/* Divine three-note ascending fanfare played once at boot */
+static void boot_chime(void) {
+    beep_ticks(523, 8);   /* C5 */
+    beep_ticks(659, 8);   /* E5 */
+    beep_ticks(784, 18);  /* G5 */
+}
+
+/* ============================================================
    PS/2 Keyboard Driver
    ============================================================ */
 #define KBD_DATA 0x60
@@ -550,6 +588,66 @@ static const char *g_diags[12] = {
 #define NDIAGS 12
 
 /* ============================================================
+   Minimal HolyC-inspired expression evaluator
+   Recursive-descent parser: + - * / ( ) unary minus, integers only.
+   Typed straight on the command line, e.g.  calc (2+3)*4
+   ============================================================ */
+static const char *g_eval_p;
+static int         g_eval_err;
+
+static int holy_eval_expr(void);
+
+static void holy_eval_skip(void) { while (*g_eval_p == ' ') g_eval_p++; }
+
+static int holy_eval_num(void) {
+    holy_eval_skip();
+    if (*g_eval_p == '(') {
+        g_eval_p++;
+        int v = holy_eval_expr();
+        holy_eval_skip();
+        if (*g_eval_p == ')') g_eval_p++; else g_eval_err = 1;
+        return v;
+    }
+    if (*g_eval_p == '-') { g_eval_p++; return -holy_eval_num(); }
+    int v = 0, any = 0;
+    while (*g_eval_p >= '0' && *g_eval_p <= '9') { v = v*10 + (*g_eval_p - '0'); g_eval_p++; any = 1; }
+    if (!any) g_eval_err = 1;
+    return v;
+}
+static int holy_eval_term(void) {
+    int v = holy_eval_num();
+    for (;;) {
+        holy_eval_skip();
+        if (*g_eval_p == '*') { g_eval_p++; v *= holy_eval_num(); }
+        else if (*g_eval_p == '/') {
+            g_eval_p++;
+            int d = holy_eval_num();
+            if (d == 0) { g_eval_err = 1; v = 0; } else v /= d;
+        } else break;
+    }
+    return v;
+}
+static int holy_eval_expr(void) {
+    int v = holy_eval_term();
+    for (;;) {
+        holy_eval_skip();
+        if (*g_eval_p == '+') { g_eval_p++; v += holy_eval_term(); }
+        else if (*g_eval_p == '-') { g_eval_p++; v -= holy_eval_term(); }
+        else break;
+    }
+    return v;
+}
+/* Returns 1 on success (writes *out), 0 on syntax error */
+static int holy_eval(const char *expr, int *out) {
+    g_eval_p = expr; g_eval_err = 0;
+    int v = holy_eval_expr();
+    holy_eval_skip();
+    if (*g_eval_p != '\0') g_eval_err = 1;
+    *out = v;
+    return !g_eval_err;
+}
+
+/* ============================================================
    Command handler
    ============================================================ */
 static void exec_cmd(void) {
@@ -558,7 +656,21 @@ static void exec_cmd(void) {
 
     if (kstrcmp(cmd,"help")==0) {
         log_push("scan dir uci stats db risk sel info heatmap back");
-        log_push("spine3d  clear  quit");
+        log_push("spine3d  clear  quit  calc <expr>  paint");
+
+    } else if (kstrncmp(cmd,"calc ",5)==0) {
+        int result;
+        if (holy_eval(cmd+5, &result)) {
+            char buf[72]; kstrcpy(buf,"= "); kitoa(result, buf+2);
+            log_push(buf);
+            beep_ticks(900, 4);
+        } else {
+            log_push("calc: syntax error");
+        }
+
+    } else if (kstrcmp(cmd,"paint")==0) {
+        g_view = 2;
+        log_push("Holy Paint opened  0-9/A-F=colour Space=paint Del=clear Esc=back");
 
     } else if (kstrcmp(cmd,"scan")==0) {
         char buf[72]; kstrcpy(buf,"DB:"); kitoa(NRECORDS,buf+3);
@@ -679,7 +791,7 @@ static void box_close(int col, int row, int w) {
 
 /* ── Panel: ANNOUNCE (top-left) ─────────────────────────────────────────────*/
 static void render_announce(int y, int x, int h, int w) {
-    vga_box(x,y,w,h, VGA_YELLOW, VGA_BLACK);
+    vga_box(x,y,w,h, VGA_LBLUE, VGA_BLACK);
     box_title(x,y,"KARNIX-EDGE","",VGA_YELLOW,VGA_BLACK);
     box_close(x,y,w);
 
@@ -700,12 +812,12 @@ static void render_announce(int y, int x, int h, int w) {
 
 /* ── Panel: DIAGNOSIS (top-center, scrolling) ────────────────────────────── */
 static void render_diag(int y, int x, int h, int w) {
-    vga_box(x,y,w,h, VGA_CYAN, VGA_BLACK);
-    box_title(x,y,"DIAGNOSIS","",VGA_CYAN,VGA_BLACK);
+    vga_box(x,y,w,h, VGA_LBLUE, VGA_BLACK);
+    box_title(x,y,"DIAGNOSIS","",VGA_YELLOW,VGA_BLACK);
     box_close(x,y,w);
 
     int ix=x+1, iw=w-2;
-    vga_puts(ix,y+1,"AI SPINE ANALYSIS SAYS:",VGA_CYAN,VGA_BLACK,iw);
+    vga_puts(ix,y+1,"AI SPINE ANALYSIS SAYS:",VGA_LBLUE,VGA_BLACK,iw);
 
     for (int i=0; i<h-4; i++) {
         int idx=(g_diag_line+i)%NDIAGS;
@@ -716,8 +828,8 @@ static void render_diag(int y, int x, int h, int w) {
     }
 
     /* separator + button */
-    for (int c=x+1;c<x+w-1;c++) vga_putc(c,y+h-3,'\xCD',VGA_CYAN,VGA_BLACK);
-    vga_puts(ix,y+h-2,"[ NEW ANALYSIS ]",VGA_WHITE,VGA_BLACK,iw);
+    for (int c=x+1;c<x+w-1;c++) vga_putc(c,y+h-3,'\xCD',VGA_LBLUE,VGA_BLACK);
+    vga_puts(ix,y+h-2,"[ NEW ANALYSIS ]",VGA_YELLOW,VGA_BLACK,iw);
 }
 
 /* ── Panel: TOOLS (top-right) ────────────────────────────────────────────── */
@@ -734,14 +846,14 @@ static const char *g_tool_names[9] = {
 };
 
 static void render_tools(int y, int x, int h, int w) {
-    vga_box(x,y,w,h, VGA_LGREEN, VGA_BLACK);
-    box_title(x,y,"TOOLS","",VGA_LGREEN,VGA_BLACK);
+    vga_box(x,y,w,h, VGA_LBLUE, VGA_BLACK);
+    box_title(x,y,"TOOLS","",VGA_YELLOW,VGA_BLACK);
     box_close(x,y,w);
 
     int ix=x+1, iw=w-2;
-    vga_puts(ix,y+1,"// Run tools,dont guess",VGA_LGREEN,VGA_BLACK,iw);
+    vga_puts(ix,y+1,"// Run tools,dont guess",VGA_LBLUE,VGA_BLACK,iw);
     for (int i=0; i<9 && i<h-3; i++) {
-        uint8_t fg=VGA_GREEN, bg=VGA_BLACK;
+        uint8_t fg=VGA_WHITE, bg=VGA_BLACK;
         /* highlight if mouse is hovering */
         if (mouse_y == y+2+i) { fg=VGA_BLACK; bg=VGA_YELLOW; }
         vga_fill(ix,y+2+i,iw,1,' ',fg,bg);
@@ -751,9 +863,9 @@ static void render_tools(int y, int x, int h, int w) {
 
 /* ── Panel: PATIENT RECORDS directory (bottom-left) ─────────────────────── */
 static void render_dir(int y, int x, int h, int w) {
-    vga_box(x,y,w,h, VGA_MAGENTA, VGA_BLACK);
+    vga_box(x,y,w,h, VGA_LBLUE, VGA_BLACK);
     /* title shows active filter */
-    if (g_risk_filter == 0) box_title(x,y,"PATIENT-RECORDS","",VGA_MAGENTA,VGA_BLACK);
+    if (g_risk_filter == 0) box_title(x,y,"PATIENT-RECORDS","",VGA_YELLOW,VGA_BLACK);
     else if (g_risk_filter == 1) box_title(x,y,"RECORDS-HIGH","",VGA_LRED,VGA_BLACK);
     else if (g_risk_filter == 2) box_title(x,y,"RECORDS-MOD","",VGA_YELLOW,VGA_BLACK);
     else box_title(x,y,"RECORDS-LOW","",VGA_LGREEN,VGA_BLACK);
@@ -761,8 +873,8 @@ static void render_dir(int y, int x, int h, int w) {
 
     int ix=x+1, iw=w-2;
     /* column headers */
-    vga_puts(ix,y+1," ID     DATE       CLASS        RISK CAT ",VGA_MAGENTA,VGA_BLACK,iw);
-    for (int c=ix;c<ix+iw;c++) vga_putc(c,y+2,'\xCD',VGA_MAGENTA,VGA_BLACK);
+    vga_puts(ix,y+1," ID     DATE       CLASS        RISK CAT ",VGA_LBLUE,VGA_BLACK,iw);
+    for (int c=ix;c<ix+iw;c++) vga_putc(c,y+2,'\xCD',VGA_LBLUE,VGA_BLACK);
 
     int rows = h - 5;  /* usable rows */
 
@@ -848,14 +960,14 @@ static void render_dir(int y, int x, int h, int w) {
     else if (g_risk_filter==2) kstrcpy(sc+kstrlen(sc),"MOD ");
     else if (g_risk_filter==3) kstrcpy(sc+kstrlen(sc),"LOW ");
     kstrcpy(sc+kstrlen(sc),"arrows/click");
-    vga_puts(ix, y+h-2, sc, VGA_MAGENTA, VGA_BLACK, iw);
+    vga_puts(ix, y+h-2, sc, VGA_LBLUE, VGA_BLACK, iw);
     (void)visible_count;
 }
 
 /* ── Panel: ANALYSIS detail (bottom-right) ───────────────────────────────── */
 static void render_analysis(int y, int x, int h, int w) {
     vga_box(x,y,w,h, VGA_WHITE, VGA_BLACK);
-    box_title(x,y,"ANALYSIS","",VGA_WHITE,VGA_BLACK);
+    box_title(x,y,"ANALYSIS","",VGA_YELLOW,VGA_BLACK);
     box_close(x,y,w);
 
     const SpineRec *r = &g_records[g_sel];
@@ -907,7 +1019,7 @@ static void render_analysis(int y, int x, int h, int w) {
     row++;
 
     /* Clinical scores separator */
-    for (int c=ix;c<ix+iw;c++) vga_putc(c,row,'\xCD',VGA_CYAN,VGA_BLACK);
+    for (int c=ix;c<ix+iw;c++) vga_putc(c,row,'\xCD',VGA_LBLUE,VGA_BLACK);
     row++;
 
     /* Cobb angle + bone density */
@@ -954,7 +1066,7 @@ static void render_analysis(int y, int x, int h, int w) {
         row++;
     }
     if (row < y+h-1) {
-        vga_puts(ix,row,"Nearest UCI:",VGA_CYAN,VGA_BLACK,12);
+        vga_puts(ix,row,"Nearest UCI:",VGA_LBLUE,VGA_BLACK,12);
         const UCIRecord *u = &g_uci[g_sel % NUCI];
         uint8_t clf = (kstrcmp(u->label,"Normal")==0) ? VGA_LGREEN : VGA_LRED;
         vga_puts(ix+13,row,u->label,clf,VGA_BLACK,iw-13);
@@ -992,14 +1104,14 @@ static uint8_t risk_color(const SpineRec *r) {
 
 static void render_heatmap(void) {
     /* ── Title bar ─────────────────────────────────────────── */
-    vga_fill(0, 0, VGA_WIDTH, 1, ' ', VGA_WHITE, VGA_MAGENTA);
-    vga_puts(1, 0, "HEATMAP/", VGA_WHITE, VGA_MAGENTA, 8);
-    vga_puts(10,0, "Risk Grid:", VGA_BLACK, VGA_MAGENTA, 10);
+    vga_fill(0, 0, VGA_WIDTH, 1, ' ', VGA_WHITE, VGA_BLUE);
+    vga_puts(1, 0, "HEATMAP/", VGA_YELLOW, VGA_BLUE, 8);
+    vga_puts(10,0, "Risk Grid:", VGA_WHITE, VGA_BLUE, 10);
     { char b[8]; kitoa(NRECORDS, b);
-      vga_puts(20,0, b, VGA_BLACK, VGA_MAGENTA, 4); }
-    vga_puts(25,0, "records from PostgreSQL", VGA_BLACK, VGA_MAGENTA, 24);
-    vga_puts(50,0, "[H]=HIGH [M]=MOD [L]=LOW", VGA_BLACK, VGA_MAGENTA, 24);
-    vga_puts(75,0, "[Esc]=back", VGA_BLACK, VGA_MAGENTA, 10);
+      vga_puts(20,0, b, VGA_YELLOW, VGA_BLUE, 4); }
+    vga_puts(25,0, "records from PostgreSQL", VGA_WHITE, VGA_BLUE, 24);
+    vga_puts(50,0, "[H]=HIGH [M]=MOD [L]=LOW", VGA_WHITE, VGA_BLUE, 24);
+    vga_puts(75,0, "[Esc]=back", VGA_WHITE, VGA_BLUE, 10);
 
     /* ── Grid ──────────────────────────────────────────────── */
     /* Tile = 10 cols wide × 3 rows tall:
@@ -1203,9 +1315,61 @@ static void render_mouse(void) {
 }
 
 /* ============================================================
+   Holy Paint – text-mode pixel canvas editor (TempleOS-style)
+   True VESA graphics needs real-mode BIOS calls unavailable from this
+   32-bit protected-mode kernel, so each "pixel" is a VGA text-mode
+   block ('\xDB') coloured with one of the 16 EGA colours – the same
+   low-res trick TempleOS's own paint tools rely on.
+   ============================================================ */
+#define CANVAS_W VGA_WIDTH
+#define CANVAS_H (VGA_HEIGHT - 3)   /* rows 1..21, leaves palette+cmd bar */
+
+static uint8_t g_canvas[CANVAS_H][CANVAS_W];
+static int     g_paint_cx = CANVAS_W/2, g_paint_cy = CANVAS_H/2;
+static uint8_t g_paint_color = VGA_YELLOW;   /* gold by default */
+
+static void paint_clear(void) {
+    for (int y=0; y<CANVAS_H; y++)
+        for (int x=0; x<CANVAS_W; x++)
+            g_canvas[y][x] = VGA_BLACK;
+}
+
+static void render_paint(void) {
+    vga_fill(0,0,VGA_WIDTH,1,' ',VGA_WHITE,VGA_BLUE);
+    vga_puts(1,0,"HOLY PAINT/", VGA_YELLOW, VGA_BLUE, 11);
+    vga_puts(13,0,"0-9/A-F=colour  Space/Click=paint  Del=clear  Esc=back",
+              VGA_WHITE, VGA_BLUE, 60);
+
+    for (int y=0; y<CANVAS_H; y++)
+        for (int x=0; x<CANVAS_W; x++)
+            vga_putc(x, 1+y, '\xDB', g_canvas[y][x], VGA_BLACK);
+
+    /* cursor: invert whatever colour sits underneath */
+    vga_putc(g_paint_cx, 1+g_paint_cy, '\xDB',
+             (g_paint_color==VGA_WHITE) ? VGA_BLACK : VGA_WHITE, g_paint_color);
+
+    /* palette bar */
+    vga_fill(0, VGA_HEIGHT-2, VGA_WIDTH, 1, ' ', VGA_LGRAY, VGA_BLACK);
+    for (int c=0; c<16; c++) {
+        vga_putc(1+c*2, VGA_HEIGHT-2, '\xDB', (uint8_t)c, VGA_BLACK);
+        if ((uint8_t)c == g_paint_color) vga_putc(1+c*2, VGA_HEIGHT-2, '^', VGA_WHITE, VGA_BLACK);
+    }
+    vga_puts(36, VGA_HEIGHT-2, "gold(E)=Yellow blue(1)=Blue white(F)=White",
+              VGA_LGRAY, VGA_BLACK, 43);
+
+    render_cmdbar();
+    render_mouse();
+    vga_flush();
+}
+
+/* ============================================================
    Main render
    ============================================================ */
 static void render_all(void) {
+    if (g_view == 2) {
+        render_paint();
+        return;
+    }
     if (g_view == 1) {
         render_heatmap();
         return;
@@ -1268,6 +1432,8 @@ void kernel_main(uint32_t mb_magic, void *mb_info) {
 
     __asm__ volatile ("sti");  /* enable interrupts */
 
+    boot_chime();
+
     log_push("KarnixOS v1.0  –  Karnix Spine Edge OS");
     log_push("Loaded 20 spine records + 10 UCI samples");
     log_push("PS/2 mouse ready  |  Keyboard ready");
@@ -1306,7 +1472,14 @@ void kernel_main(uint32_t mb_magic, void *mb_info) {
         if (kbd_pending == 1) {
             kbd_pending = 0;
             char c = kbd_char;
-            if (c == '\n' || c == '\r') {
+            key_click();
+            if (g_view == 2) {
+                /* Holy Paint: hex digit selects colour, space paints */
+                if      (c>='0'&&c<='9') g_paint_color=(uint8_t)(c-'0');
+                else if (c>='a'&&c<='f') g_paint_color=(uint8_t)(10+(c-'a'));
+                else if (c>='A'&&c<='F') g_paint_color=(uint8_t)(10+(c-'A'));
+                else if (c==' ') g_canvas[g_paint_cy][g_paint_cx]=g_paint_color;
+            } else if (c == '\n' || c == '\r') {
                 exec_cmd();
             } else if (c == '\b') {
                 if (g_cmd_len > 0) { g_cmd_len--; g_cmd[g_cmd_len]='\0'; }
@@ -1317,7 +1490,16 @@ void kernel_main(uint32_t mb_magic, void *mb_info) {
         } else if (kbd_pending == 2) {
             kbd_pending = 0;
             uint8_t sp = kbd_special;
-            if (g_view == 1) {
+            key_click();
+            if (g_view == 2) {
+                /* Holy Paint: arrows move cursor, Del clears, Esc exits */
+                if      (sp == 0x4B) { if (g_paint_cx > 0)            g_paint_cx--; }
+                else if (sp == 0x4D) { if (g_paint_cx < CANVAS_W-1)   g_paint_cx++; }
+                else if (sp == 0x48) { if (g_paint_cy > 0)            g_paint_cy--; }
+                else if (sp == 0x50) { if (g_paint_cy < CANVAS_H-1)   g_paint_cy++; }
+                else if (sp == KEY_DEL) { paint_clear(); log_push("Canvas cleared."); }
+                else if (sp == KEY_ESC) { g_view=0; log_push("Holy Paint closed."); }
+            } else if (g_view == 1) {
                 /* In heatmap view: Up/Dn scroll pages, Esc=back */
                 #define HM_PER_PAGE 56
                 if      (sp == 0x48) { g_hmap_offset -= HM_PER_PAGE; if (g_hmap_offset<0) g_hmap_offset=0; }
@@ -1333,10 +1515,16 @@ void kernel_main(uint32_t mb_magic, void *mb_info) {
             }
         }
 
-        /* ── Mouse click → select record OR open heatmap ─── */
+        /* ── Mouse click → select record OR open heatmap OR paint ─── */
         if (mouse_click) {
             mouse_click = 0;
-            if (g_view == 0) {
+            if (g_view == 2) {
+                if (mouse_y >= 1 && mouse_y <= CANVAS_H && mouse_x < CANVAS_W) {
+                    g_paint_cx = mouse_x;
+                    g_paint_cy = mouse_y - 1;
+                    g_canvas[g_paint_cy][g_paint_cx] = g_paint_color;
+                }
+            } else if (g_view == 0) {
                 /* Tools panel: col 55-79, rows 2-10 (y+2+i where top_y=1) */
                 if (mouse_x >= 56 && mouse_x < 79 &&
                     mouse_y >= 3  && mouse_y <= 10) {

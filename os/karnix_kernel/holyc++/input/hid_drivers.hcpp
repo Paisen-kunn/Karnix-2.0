@@ -1,0 +1,155 @@
+module KarnixInput;
+import KarnixCore;
+
+const KBD_DATA : U16 = 0x60;
+const KBD_STAT : U16 = 0x64;
+
+U8 ScNormal[128] = {
+    0,27,'1','2','3','4','5','6','7','8','9','0','-','=','\b',
+    '\t','q','w','e','r','t','y','u','i','o','p','[',']','\n',0,
+    'a','s','d','f','g','h','j','k','l',';','\'','`',0,'\\',
+    'z','x','c','v','b','n','m',',','.','/',0,'*',0,' ',0,
+    0,0,0,0,0,0,0,0,0,0,0,0,
+    '7','8','9','-','4','5','6','+','1','2','3','0','.',0,0,0,0,0
+};
+
+U8 ScShift[128] = {
+    0,27,'!','@','#','$','%','^','&','*','(',')','_','+','\b',
+    '\t','Q','W','E','R','T','Y','U','I','O','P','{','}','\n',0,
+    'A','S','D','F','G','H','J','K','L',':','"','~',0,'|',
+    'Z','X','C','V','B','N','M','<','>','?',0,'*',0,' ',0,
+    0,0,0,0,0,0,0,0,0,0,0,0,
+    '7','8','9','-','4','5','6','+','1','2','3','0','.',0,0,0,0,0
+};
+
+enum SpecialKey
+{
+    KEY_ESC   = 0x01,
+    KEY_UP    = 0x48,
+    KEY_LEFT  = 0x4B,
+    KEY_RIGHT = 0x4D,
+    KEY_DOWN  = 0x50,
+    KEY_F1    = 0x3B,
+    KEY_DEL   = 0x53,
+};
+
+volatile U8  kbdShift   = 0;
+volatile U8  kbdExt     = 0;
+volatile U8  kbdChar    = 0;
+volatile I32 kbdPending = 0;
+volatile U8  kbdSpecial = 0;
+
+irq U0 Irq1Handler()
+{
+    U8 sc = InB(KBD_DATA);
+
+    if (sc == 0xE0) { kbdExt = 1; PicEoi(1); return; }
+    if (sc == 0xE1) { kbdExt = 0; PicEoi(1); return; }
+
+    if (kbdExt) {
+        kbdExt = 0;
+        if (!(sc & 0x80)) { kbdSpecial = sc; kbdPending = 2; }
+        PicEoi(1);
+        return;
+    }
+
+    if (sc == 0x2A || sc == 0x36) { kbdShift = 1; PicEoi(1); return; }
+    if (sc == 0xAA || sc == 0xB6) { kbdShift = 0; PicEoi(1); return; }
+    if (sc & 0x80)                { PicEoi(1); return; }
+    if (sc == KEY_ESC)            { kbdSpecial = KEY_ESC; kbdPending = 2; PicEoi(1); return; }
+
+    U8 c = kbdShift ? ScShift[sc] : ScNormal[sc];
+    if (c) { kbdChar = c; kbdPending = 1; }
+    PicEoi(1);
+}
+
+const MOUSE_STATUS   : U16 = 0x64;
+const MOUSE_ACOMMAND : U16 = 0x64;
+const MOUSE_DATA     : U16 = 0x60;
+const MOUSE_INPUT_FULL  : U8 = 0x02;
+const MOUSE_OUTPUT_FULL : U8 = 0x01;
+
+U0 MouseWait(U8 type)
+{
+    U32 timeout = 100000;
+    if (!type) while (timeout-- && !(InB(MOUSE_STATUS) & MOUSE_OUTPUT_FULL));
+    else       while (timeout-- &&  (InB(MOUSE_STATUS) & MOUSE_INPUT_FULL));
+}
+
+U0 MouseWrite(U8 val)
+{
+    MouseWait(1); OutB(MOUSE_ACOMMAND, 0xD4);
+    MouseWait(1); OutB(MOUSE_DATA, val);
+}
+
+U8 MouseRead()
+{
+    MouseWait(0);
+    return InB(MOUSE_DATA);
+}
+
+volatile I32 mouseX = 40, mouseY = 12;
+volatile U8  mouseButtons = 0;
+volatile I32 mouseClick = 0;
+U8 mouseCycle = 0;
+U8 mousePacket[3];
+
+irq U0 Irq12Handler()
+{
+    if (!(InB(MOUSE_STATUS) & MOUSE_OUTPUT_FULL)) { PicEoi(12); return; }
+
+    U8 val = InB(MOUSE_DATA);
+
+    if (mouseCycle == 0 && !(val & 0x08)) { PicEoi(12); return; }
+
+    mousePacket[mouseCycle++] = val;
+
+    if (mouseCycle == 3) {
+        mouseCycle = 0;
+        I8 dx =  (I8)mousePacket[1];
+        I8 dy = -(I8)mousePacket[2];
+
+        I32 nx = mouseX + dx / 4;
+        I32 ny = mouseY + dy / 4;
+        if (nx < 0) nx = 0;             if (nx >= VGA_WIDTH)  nx = VGA_WIDTH - 1;
+        if (ny < 1) ny = 1;             if (ny >= VGA_HEIGHT-1) ny = VGA_HEIGHT - 2;
+        mouseX = nx; mouseY = ny;
+
+        U8 prev = mouseButtons;
+        mouseButtons = mousePacket[0] & 0x07;
+        if ((mouseButtons & 1) && !(prev & 1)) mouseClick = 1;
+    }
+    PicEoi(12);
+}
+
+U0 Ps2Flush()
+{
+    I32 i;
+    for (i = 0; i < 64; i++) {
+        if (!(InB(0x64) & 0x01)) break;
+        InB(0x60);
+        IoWait();
+    }
+}
+
+U0 MouseInit()
+{
+    Ps2Flush();
+    MouseWait(1); OutB(MOUSE_ACOMMAND, 0xA8); IoWait();
+
+    MouseWait(1); OutB(MOUSE_ACOMMAND, 0x20); IoWait();
+    MouseWait(0);
+    U8 status = (InB(MOUSE_DATA) | 0x02) & ~0x20;
+    MouseWait(1); OutB(MOUSE_ACOMMAND, 0x60); IoWait();
+    MouseWait(1); OutB(MOUSE_DATA, status);   IoWait();
+
+    MouseWrite(0xFF); MouseRead(); MouseRead(); MouseRead();
+    MouseWrite(0xF6); MouseRead();
+    MouseWrite(0xF3); MouseRead(); MouseWrite(40); MouseRead();
+    MouseWrite(0xF4); MouseRead();
+
+    mouseCycle = 0;
+    mouseX = VGA_WIDTH / 2;
+    mouseY = VGA_HEIGHT / 2;
+}
+// =============================================================================

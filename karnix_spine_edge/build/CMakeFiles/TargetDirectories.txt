@@ -1,0 +1,3 @@
+/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/build/CMakeFiles/spine_cli.dir
+/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/build/CMakeFiles/edit_cache.dir
+/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/build/CMakeFiles/rebuild_cache.dir

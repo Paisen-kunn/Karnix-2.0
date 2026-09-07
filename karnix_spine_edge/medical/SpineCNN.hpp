@@ -39,11 +39,13 @@
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  Image I/O  (PPM/PGM native; JPEG/PNG via macOS sips – fully offline)       */
 /* ─────────────────────────────────────────────────────────────────────────── */
+#ifndef KARNIX_SPINE_CLI_RAW_IMAGE_DEFINED
 struct RawImage {
     std::vector<double> pixels;  // normalised [0,1], grayscale
     int width  = 0;
     int height = 0;
 };
+#endif
 
 namespace ImageIO {
 
