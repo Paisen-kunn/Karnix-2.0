@@ -576,15 +576,40 @@ static void render_cmdbar(WINDOW *win, int rows, int cols) {
     wattroff(win, A_BLINK | A_BOLD | COLOR_PAIR(CP_CMD));
 }
 
+static int run_host_command(const char *command) {
+    def_prog_mode();
+    endwin();
+    int result = system(command);
+    reset_prog_mode();
+    refresh();
+    clear();
+    return result;
+}
+
 /* ─────────────────────────────────────────────────────  Command handler  ─── */
 static void exec_command(const char *cmd) {
     char buf[300];
     if (strcmp(cmd, "help") == 0) {
-        log_msg("Commands: help scan dir uci clear quit up down", CP_PANEL_GRN);
+        log_msg("Commands: help train scan dir uci clear quit up down", CP_PANEL_GRN);
+    } else if (strcmp(cmd, "train") == 0) {
+        int result = run_host_command(
+            "cd karnix_spine_edge && "
+            "./build/spine_cli --train data/osteoarthritis/train.csv 3 && "
+            "./build/spine_cli --evaluate data/osteoarthritis/test.csv");
+        log_msg(result == 0 ? "OA CNN training and evaluation completed."
+                            : "OA CNN training failed. Run karnix_spine_edge/setup.sh.",
+                result == 0 ? CP_PANEL_GRN : CP_PANEL_RED);
     } else if (strcmp(cmd, "scan") == 0) {
+        int result = run_host_command(
+            "cd karnix_spine_edge && "
+            "./build/spine_cli --screen data/osteoarthritis/screen");
+        g_record_count = 0;
+        g_uci_count = 0;
         parse_json_records();
         parse_uci_csv();
-        log_msg("Scanning spine records... done.", CP_PANEL_GRN);
+        log_msg(result == 0 ? "OA screening complete; records reloaded."
+                            : "OA screening failed. Run karnix_spine_edge/setup.sh.",
+                result == 0 ? CP_PANEL_GRN : CP_PANEL_RED);
     } else if (strcmp(cmd, "dir") == 0 || strcmp(cmd, "ls") == 0) {
         snprintf(buf, sizeof(buf), "Records loaded: %d  UCI: %d", g_record_count, g_uci_count);
         log_msg(buf, CP_PANEL_CYN);

@@ -13,10 +13,12 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <thread>
+#include <numeric>
+#include <random>
 #include <sys/stat.h>
 #include <dirent.h>       
-static const std::string MODEL_PATH = "./models/resnet50_mura.onnx";
-static const ModelType MODEL_TYPE = ModelType::RESNET50_MURA;
+static const std::string MODEL_PATH = "./models/osteoarthritis_cnn.weights";
 
 struct RawImage {
     std::vector<double> pixels;
@@ -189,65 +191,398 @@ static std::vector<std::string> scan_images(const std::string& dir_path) {
     return files;
 }
 
-static int label_from_filename(const std::string& path) {
-    auto slash = path.rfind('/');
-    std::string fname = (slash == std::string::npos) ? path : path.substr(slash + 1);
+struct LabeledImage {
+    std::string path;
+    int label;
+};
 
-    std::string lf = fname;
-    for (auto& c : lf)
-        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+class BatchLoader {
+private:
+    const std::vector<LabeledImage>& samples_;
+    std::vector<std::size_t> order_;
+    int batch_size_;
 
-    if (lf.find("abnormal") != std::string::npos) return 1;
-    if (lf.find("normal")   != std::string::npos) return 0;
-    return -1;
+public:
+    BatchLoader(const std::vector<LabeledImage>& samples, int batch_size)
+        : samples_(samples), order_(samples.size()), batch_size_(std::max(1, batch_size)) {
+        std::iota(order_.begin(), order_.end(), 0);
+    }
+
+    void begin_epoch(int epoch) {
+        std::mt19937 generator(20260909u + static_cast<unsigned int>(epoch));
+        std::shuffle(order_.begin(), order_.end(), generator);
+    }
+
+    int batch_count() const {
+        return static_cast<int>((order_.size() + batch_size_ - 1) / batch_size_);
+    }
+
+    std::vector<const LabeledImage*> batch(int batch_index) const {
+        std::size_t begin = static_cast<std::size_t>(batch_index * batch_size_);
+        std::size_t end = std::min(order_.size(), begin + static_cast<std::size_t>(batch_size_));
+        std::vector<const LabeledImage*> result;
+        result.reserve(end - begin);
+        for (std::size_t index = begin; index < end; ++index) {
+            result.push_back(&samples_[order_[index]]);
+        }
+        return result;
+    }
+};
+
+static std::vector<LabeledImage> load_manifest(const std::string& manifest_path) {
+    std::ifstream file(manifest_path);
+    if (!file.is_open()) throw std::runtime_error("Cannot open manifest: " + manifest_path);
+    std::vector<LabeledImage> samples;
+    std::string line;
+    std::getline(file, line);
+    while (std::getline(file, line)) {
+        std::istringstream row(line);
+        std::string path;
+        std::string label;
+        if (!std::getline(row, path, ',') || !std::getline(row, label, ',')) continue;
+        int value = std::stoi(label);
+        if (value == 0 || value == 1) {
+            std::ifstream image(path, std::ios::binary);
+            if (!image.good()) throw std::runtime_error("Manifest image not found: " + path);
+            samples.push_back({path, value});
+        }
+    }
+    if (samples.empty()) throw std::runtime_error("Manifest contains no samples: " + manifest_path);
+    int class_counts[2] = {0, 0};
+    for (const auto& sample : samples) ++class_counts[sample.label];
+    if (class_counts[0] == 0 || class_counts[1] == 0) {
+        throw std::runtime_error("Manifest must contain both binary classes: " + manifest_path);
+    }
+    return samples;
 }
 
-static void train_local_cnn(SpineCNN& model,
-                            const std::vector<std::string>& image_paths,
-                            const std::string& weights_path) {
-    std::vector<std::pair<std::string, int>> labeled_images;
-    for (const auto& path : image_paths) {
-        int label = label_from_filename(path);
-        if (label >= 0) labeled_images.push_back({path, label});
+static void save_weights_atomic(const SpineCNN& model, const std::string& path) {
+    std::string temporary = path + ".tmp";
+    model.save_weights(temporary);
+    if (std::rename(temporary.c_str(), path.c_str()) != 0) {
+        std::remove(temporary.c_str());
+        throw std::runtime_error("Cannot finalize checkpoint: " + path);
     }
+}
 
-    if (labeled_images.empty()) {
-        std::cout << "Training skipped: no labeled images found.\n\n";
-        return;
+static void train_oa_cnn(const std::string& manifest_path,
+                         const std::string& weights_path,
+                         int epochs,
+                         bool verbose,
+                         const std::string& task_name,
+                         const std::string& negative_name,
+                         const std::string& positive_name,
+                         int batch_size,
+                         const std::string& checkpoint_dir,
+                         const std::string& resume_path) {
+    std::vector<LabeledImage> samples = load_manifest(manifest_path);
+    SpineCNN model;
+    if (!resume_path.empty()) {
+        model.load_weights(resume_path);
+        if (!model.are_weights_loaded()) {
+            throw std::runtime_error("Cannot resume from checkpoint: " + resume_path);
+        }
+        std::cout << "[CHECKPOINT] Resumed weights from " << resume_path << "\n";
     }
-
-    model.load_weights(weights_path);
-    const int epochs = 3;
-    const double learning_rate = 0.001;
-
-    std::cout << "Training local CNN on " << labeled_images.size()
-              << " labeled image(s)\n";
-    std::cout << "  Epochs: " << epochs << " | Learning rate: "
-              << learning_rate << "\n";
-
+    BatchLoader loader(samples, batch_size);
+    const double learning_rate = 0.0001;
+    auto training_started = std::chrono::steady_clock::now();
+    std::cout << "Training " << task_name << " CNN on " << samples.size() << " images\n";
+    std::cout << "Epochs: " << epochs << " | Learning rate: " << learning_rate
+              << " | Batch size: " << batch_size << "\n";
+    std::cout << "Architecture: 1x64x64 -> Conv(4) -> Pool -> Conv(8) -> Pool"
+              << " -> Conv(16) -> Pool -> Dense(32) -> Softmax(2)\n";
+    std::cout << "Parameters: " << model.get_param_count()
+              << " | Optimizer: SGD | Loss: Cross-Entropy\n\n";
+    std::cout << "PIPELINE\n"
+              << "  [1] DATASET       validated manifest: " << manifest_path << "\n"
+              << "  [2] PREPROCESSING grayscale -> 64x64 -> normalize [-1,1]\n"
+              << "  [3] BATCH LOADER  deterministic shuffle, " << loader.batch_count() << " batches/epoch\n"
+              << "  [4] MODEL         Conv/ReLU/Pool x3 -> Dense -> Softmax\n"
+              << "  [5] LOSS          binary cross-entropy\n"
+              << "  [6] FORWARD       probabilities for 2 classes\n"
+              << "  [7] BACKPROP      analytical gradients through every layer\n"
+              << "  [8] OPTIMIZER     online SGD inside each loaded batch\n"
+              << "  [9] EPOCHS        " << epochs << " complete dataset passes\n"
+              << " [10] CHECKPOINT    atomic save after every epoch\n\n";
     for (int epoch = 1; epoch <= epochs; ++epoch) {
+        loader.begin_epoch(epoch);
+        auto epoch_started = std::chrono::steady_clock::now();
         double total_loss = 0.0;
-        int trained = 0;
-        for (const auto& sample : labeled_images) {
-            try {
-                Tensor input = model.preprocess(sample.first);
-                total_loss += model.train_step(input, sample.second, learning_rate);
-                ++trained;
-            } catch (const std::exception& e) {
-                std::cerr << "  [WARN] Training skipped for " << sample.first
-                          << ": " << e.what() << "\n";
+        int correct = 0;
+        int sample_number = 0;
+        for (int batch_index = 0; batch_index < loader.batch_count(); ++batch_index) {
+            auto batch_started = std::chrono::steady_clock::now();
+            std::vector<const LabeledImage*> batch = loader.batch(batch_index);
+            double batch_loss = 0.0;
+            int batch_correct = 0;
+            std::cout << "[BATCH] epoch=" << epoch << "/" << epochs
+                      << " batch=" << batch_index + 1 << "/" << loader.batch_count()
+                      << " samples=" << batch.size() << " begin\n";
+            for (const LabeledImage* sample : batch) {
+                ++sample_number;
+                auto sample_started = std::chrono::steady_clock::now();
+                Tensor input = model.preprocess(sample->path);
+                double loss = model.train_step(input, sample->label, learning_rate);
+                if (!std::isfinite(loss)) {
+                    throw std::runtime_error("Non-finite loss for image: " + sample->path);
+                }
+                total_loss += loss;
+                batch_loss += loss;
+                Tensor prediction_tensor = model.forward(input);
+                const auto& prediction = prediction_tensor.get_data();
+                if (prediction.size() != 2 || !std::isfinite(prediction[0]) ||
+                    !std::isfinite(prediction[1])) {
+                    throw std::runtime_error("Invalid model probabilities for image: " + sample->path);
+                }
+                int predicted = prediction[1] > prediction[0] ? 1 : 0;
+                if (predicted == sample->label) {
+                    ++correct;
+                    ++batch_correct;
+                }
+                if (verbose) {
+                    double sample_ms = std::chrono::duration<double, std::milli>(
+                        std::chrono::steady_clock::now() - sample_started).count();
+                    std::cout << "[TRAIN] epoch=" << epoch << "/" << epochs
+                              << " batch=" << batch_index + 1 << "/" << loader.batch_count()
+                              << " sample=" << sample_number << "/" << samples.size()
+                              << " label=" << (sample->label ? positive_name : negative_name)
+                              << " predicted=" << (predicted ? positive_name : negative_name)
+                              << " p_negative=" << std::fixed << std::setprecision(4) << prediction[0]
+                              << " p_positive=" << prediction[1]
+                              << " loss=" << loss
+                              << " correct=" << (predicted == sample->label ? "yes" : "no")
+                              << " time_ms=" << std::setprecision(2) << sample_ms
+                              << " file=" << sample->path << "\n";
+                }
             }
+            double batch_ms = std::chrono::duration<double, std::milli>(
+                std::chrono::steady_clock::now() - batch_started).count();
+            std::cout << "[BATCH] epoch=" << epoch << "/" << epochs
+                      << " batch=" << batch_index + 1 << "/" << loader.batch_count()
+                      << " loss=" << std::fixed << std::setprecision(4) << batch_loss / batch.size()
+                      << " accuracy=" << std::setprecision(2)
+                      << 100.0 * batch_correct / batch.size() << "%"
+                      << " duration_ms=" << batch_ms << " end\n";
         }
-
-        if (trained > 0) {
-            std::cout << "  Epoch " << epoch << "/" << epochs
-                      << " - loss: " << std::fixed << std::setprecision(4)
-                      << (total_loss / trained) << "\n";
+        double epoch_seconds = std::chrono::duration<double>(
+            std::chrono::steady_clock::now() - epoch_started).count();
+        std::cout << "Epoch " << epoch << "/" << epochs
+                  << " - loss: " << std::fixed << std::setprecision(4)
+                  << total_loss / samples.size()
+                  << " - train accuracy: " << std::setprecision(2)
+                  << 100.0 * correct / samples.size() << "%"
+                  << " - duration: " << epoch_seconds << " s"
+                  << " - throughput: " << samples.size() / epoch_seconds << " images/s\n";
+        if (!checkpoint_dir.empty()) {
+            std::string checkpoint = checkpoint_dir + "/epoch_" +
+                std::to_string(epoch) + ".weights";
+            save_weights_atomic(model, checkpoint);
+            std::cout << "[CHECKPOINT] epoch=" << epoch << " saved=" << checkpoint << "\n";
         }
     }
+    save_weights_atomic(model, weights_path);
+    double training_seconds = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - training_started).count();
+    std::cout << "Trained OA weights saved to " << weights_path << "\n";
+    std::cout << "TRAINING DURATION: " << std::fixed << std::setprecision(2)
+              << training_seconds << " seconds (" << training_seconds / 60.0 << " minutes)\n";
+}
 
-    model.save_weights(weights_path);
-    std::cout << "  ✓ Trained weights saved to " << weights_path << "\n\n";
+static int evaluate_oa_cnn(const std::string& manifest_path,
+                           const std::string& weights_path,
+                           bool verbose,
+                           const std::string& task_name,
+                           const std::string& negative_name,
+                           const std::string& positive_name) {
+    std::vector<LabeledImage> samples = load_manifest(manifest_path);
+    SpineCNN model;
+    model.load_weights(weights_path);
+    if (!model.are_weights_loaded()) throw std::runtime_error("Valid trained weights not found: " + weights_path);
+    auto testing_started = std::chrono::steady_clock::now();
+    int confusion[2][2] = {{0, 0}, {0, 0}};
+    for (std::size_t index = 0; index < samples.size(); ++index) {
+        const auto& sample = samples[index];
+        auto sample_started = std::chrono::steady_clock::now();
+        Tensor input = model.preprocess(sample.path);
+        Tensor prediction_tensor = model.forward(input);
+        const auto& prediction = prediction_tensor.get_data();
+        if (prediction.size() != 2 || !std::isfinite(prediction[0]) ||
+            !std::isfinite(prediction[1])) {
+            throw std::runtime_error("Invalid model probabilities for image: " + sample.path);
+        }
+        int predicted = prediction[1] > prediction[0] ? 1 : 0;
+        ++confusion[sample.label][predicted];
+        if (verbose) {
+            double sample_ms = std::chrono::duration<double, std::milli>(
+                std::chrono::steady_clock::now() - sample_started).count();
+            std::cout << "[TEST] sample=" << index + 1 << "/" << samples.size()
+                      << " label=" << (sample.label ? positive_name : negative_name)
+                      << " predicted=" << (predicted ? positive_name : negative_name)
+                      << " p_negative=" << std::fixed << std::setprecision(4) << prediction[0]
+                      << " p_positive=" << prediction[1]
+                      << " correct=" << (predicted == sample.label ? "yes" : "no")
+                      << " time_ms=" << std::setprecision(2) << sample_ms
+                      << " file=" << sample.path << "\n";
+        }
+    }
+    int correct = confusion[0][0] + confusion[1][1];
+    double test_seconds = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - testing_started).count();
+    double sensitivity = confusion[1][1] + confusion[1][0] == 0 ? 0.0
+        : 100.0 * confusion[1][1] / (confusion[1][1] + confusion[1][0]);
+    double specificity = confusion[0][0] + confusion[0][1] == 0 ? 0.0
+        : 100.0 * confusion[0][0] / (confusion[0][0] + confusion[0][1]);
+    std::cout << task_name << " TEST RESULTS\n";
+    std::cout << "Images: " << samples.size() << "\n";
+    std::cout << "Accuracy: " << std::fixed << std::setprecision(2)
+              << 100.0 * correct / samples.size() << "%\n";
+    std::cout << "Sensitivity: " << sensitivity << "%\n";
+    std::cout << "Specificity: " << specificity << "%\n";
+    std::cout << "TN=" << confusion[0][0] << " FP=" << confusion[0][1]
+              << " FN=" << confusion[1][0] << " TP=" << confusion[1][1] << "\n";
+    std::cout << "TEST DURATION: " << test_seconds << " seconds"
+              << " | " << samples.size() / test_seconds << " images/s"
+              << " | average " << test_seconds * 1000.0 / samples.size() << " ms/image\n";
+    return correct == 0 ? 1 : 0;
+}
+
+static std::string base_name(const std::string& path) {
+    auto slash = path.rfind('/');
+    return slash == std::string::npos ? path : path.substr(slash + 1);
+}
+
+static std::string probability_bar(double value, int width = 30) {
+    int filled = static_cast<int>(std::round(std::max(0.0, std::min(1.0, value)) * width));
+    return std::string(filled, '#') + std::string(width - filled, '.');
+}
+
+static std::vector<std::string> image_preview(const RawImage& image) {
+    static const std::string shades = " .:-=+*#%@";
+    const int preview_width = 32;
+    const int preview_height = 12;
+    std::vector<std::string> lines(preview_height, std::string(preview_width, ' '));
+    for (int row = 0; row < preview_height; ++row) {
+        int source_y = std::min(image.height - 1, row * image.height / preview_height);
+        for (int column = 0; column < preview_width; ++column) {
+            int source_x = std::min(image.width - 1, column * image.width / preview_width);
+            double value = image.pixels[source_y * image.width + source_x];
+            int shade = static_cast<int>(std::round(
+                std::max(0.0, std::min(1.0, value)) * (shades.size() - 1)));
+            lines[row][column] = shades[shade];
+        }
+    }
+    return lines;
+}
+
+static void render_cnn_frame(const RawImage& image,
+                             const std::string& path,
+                             int image_index,
+                             int image_count,
+                             int active_stage,
+                             double normal_probability,
+                             double oa_probability) {
+    static const std::vector<std::string> stages = {
+        "Input 64x64", "Conv 1x4", "ReLU", "MaxPool",
+        "Conv 4x8", "Conv 8x16", "Dense 32x2", "Softmax"
+    };
+    std::cout << "\033[2J\033[H";
+    std::cout << "\033[1;36mKARNIX OA CNN - LIVE INFERENCE\033[0m\n";
+    std::cout << "Image " << image_index << "/" << image_count
+              << "  " << base_name(path) << "\n\n";
+    for (const auto& line : image_preview(image)) {
+        std::cout << "  |" << line << "|\n";
+    }
+    std::cout << "\n";
+    for (std::size_t index = 0; index < stages.size(); ++index) {
+        if (static_cast<int>(index) < active_stage) {
+            std::cout << "\033[1;32m[OK] " << stages[index] << "\033[0m";
+        } else if (static_cast<int>(index) == active_stage) {
+            std::cout << "\033[1;33m[>>] " << stages[index] << "\033[0m";
+        } else {
+            std::cout << "[  ] " << stages[index];
+        }
+        if (index + 1 != stages.size()) std::cout << " -> ";
+        if (index == 3) std::cout << "\n";
+    }
+    std::cout << "\n\n";
+    if (active_stage >= static_cast<int>(stages.size())) {
+        std::cout << "No OA  [" << probability_bar(normal_probability) << "] "
+                  << std::fixed << std::setprecision(2) << normal_probability * 100.0 << "%\n";
+        std::cout << "OA     [" << probability_bar(oa_probability) << "] "
+                  << oa_probability * 100.0 << "%\n\n";
+        if (oa_probability > normal_probability) {
+            std::cout << "\033[1;31mCLASSIFICATION: OSTEOARTHRITIS\033[0m\n";
+        } else {
+            std::cout << "\033[1;32mCLASSIFICATION: NO OA\033[0m\n";
+        }
+    } else {
+        std::cout << "Activations flowing through the custom C++ CNN";
+        std::cout << std::string(active_stage % 4, '.') << "\n";
+    }
+    std::cout.flush();
+}
+
+static int animation_delay_ms() {
+    const char* configured = std::getenv("KARNIX_ANIMATION_DELAY_MS");
+    return configured ? std::max(0, std::atoi(configured)) : 120;
+}
+
+static void animate_oa_cnn(const std::string& images_dir,
+                           const std::string& weights_path,
+                           int requested_count) {
+    std::vector<std::string> images = scan_images(images_dir);
+    if (images.empty()) throw std::runtime_error("No animation images found: " + images_dir);
+    int count = std::min(requested_count, static_cast<int>(images.size()));
+    SpineCNN model;
+    model.load_weights(weights_path);
+    if (!model.are_weights_loaded()) throw std::runtime_error("Valid trained weights not found: " + weights_path);
+    int delay = animation_delay_ms();
+    for (int index = 0; index < count; ++index) {
+        RawImage image = load_image(images[index]);
+        Tensor input = model.preprocess(images[index]);
+        Tensor output = model.forward(input);
+        const auto& probabilities = output.get_data();
+        for (int stage = 0; stage <= 8; ++stage) {
+            render_cnn_frame(image, images[index], index + 1, count, stage,
+                             probabilities[0], probabilities[1]);
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay * 4));
+    }
+    std::cout << "\nAnimated CNN inference complete: " << count << " image(s).\n";
+}
+
+static void export_animation_data(const std::string& images_dir,
+                                  const std::string& weights_path,
+                                  const std::string& output_path,
+                                  int requested_count) {
+    std::vector<std::string> images = scan_images(images_dir);
+    if (images.empty()) throw std::runtime_error("No animation images found: " + images_dir);
+    int count = std::min(requested_count, static_cast<int>(images.size()));
+    SpineCNN model;
+    model.load_weights(weights_path);
+    if (!model.are_weights_loaded()) throw std::runtime_error("Valid trained weights not found: " + weights_path);
+    std::ofstream output(output_path);
+    if (!output.is_open()) throw std::runtime_error("Cannot write animation data: " + output_path);
+    output << "{\n  \"model\": \"Karnix custom C++ CNN\",\n  \"images\": [\n";
+    for (int index = 0; index < count; ++index) {
+        Tensor input = model.preprocess(images[index]);
+        Tensor prediction = model.forward(input);
+        const auto& probabilities = prediction.get_data();
+        std::string filename = base_name(images[index]);
+        bool known_oa = filename.rfind("oa_", 0) == 0;
+        output << "    {\"file\": \"" << filename
+               << "\", \"url\": \"../data/osteoarthritis/screen/" << filename
+               << "\", \"normal\": " << std::fixed << std::setprecision(6) << probabilities[0]
+               << ", \"oa\": " << probabilities[1]
+               << ", \"knownLabel\": \"" << (known_oa ? "OA" : "No OA") << "\"}";
+        if (index + 1 != count) output << ",";
+        output << "\n";
+    }
+    output << "  ]\n}\n";
+    std::cout << "Exported browser animation data for " << count
+              << " image(s) to " << output_path << "\n";
 }
 
 static std::string patient_id_from_path(const std::string& path) {
@@ -270,11 +605,66 @@ static void print_banner() {
     std::cout << "================================================================================\n\n";
 }
 
-int main() {
+static std::string option_value(int argc, char** argv,
+                                const std::string& option,
+                                const std::string& fallback) {
+    for (int index = 1; index + 1 < argc; ++index) {
+        if (argv[index] == option) return argv[index + 1];
+    }
+    return fallback;
+}
+
+static int option_int(int argc, char** argv,
+                      const std::string& option, int fallback) {
+    std::string value = option_value(argc, argv, option, std::to_string(fallback));
+    return std::max(1, std::atoi(value.c_str()));
+}
+
+int main(int argc, char** argv) {
+    try {
+        bool verbose = std::find(argv + 1, argv + argc, std::string("--verbose")) != argv + argc;
+        std::string model_path = option_value(argc, argv, "--model", MODEL_PATH);
+        std::string task_name = option_value(argc, argv, "--task", "OSTEOARTHRITIS");
+        std::string negative_name = option_value(argc, argv, "--negative", "NO_OA");
+        std::string positive_name = option_value(argc, argv, "--positive", "OA");
+        int batch_size = option_int(argc, argv, "--batch-size", 16);
+        std::string checkpoint_dir = option_value(argc, argv, "--checkpoint-dir", "");
+        std::string resume_path = option_value(argc, argv, "--resume", "");
+        if (argc >= 3 && std::string(argv[1]) == "--train") {
+            int epochs = argc >= 4 ? std::max(1, std::atoi(argv[3])) : 3;
+            train_oa_cnn(argv[2], model_path, epochs, verbose,
+                         task_name, negative_name, positive_name,
+                         batch_size, checkpoint_dir, resume_path);
+            return 0;
+        }
+        if (argc >= 3 && std::string(argv[1]) == "--evaluate") {
+            return evaluate_oa_cnn(argv[2], model_path, verbose,
+                                   task_name, negative_name, positive_name);
+        }
+        if (argc >= 2 && std::string(argv[1]) == "--animate") {
+            std::string directory = argc >= 3 ? argv[2] : "./data/osteoarthritis/screen";
+            int count = argc >= 4 ? std::max(1, std::atoi(argv[3])) : 10;
+            animate_oa_cnn(directory, model_path, count);
+            return 0;
+        }
+        if (argc >= 4 && std::string(argv[1]) == "--export-animation-data") {
+            int count = argc >= 5 ? std::max(1, std::atoi(argv[4])) : 10;
+            export_animation_data(argv[2], model_path, argv[3], count);
+            return 0;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "[ERROR] " << e.what() << "\n";
+        return 1;
+    }
+
     print_banner();
 
-    const std::string images_dir = "./data/images";
-    const std::string model_path = MODEL_PATH;
+    const std::string images_dir = argc >= 3 && std::string(argv[1]) == "--screen"
+        ? argv[2] : "./data/images";
+    const std::string model_path = option_value(argc, argv, "--model", MODEL_PATH);
+    const std::string task_name = option_value(argc, argv, "--task", "OSTEOARTHRITIS");
+    const std::string negative_name = option_value(argc, argv, "--negative", "NO_OA");
+    const std::string positive_name = option_value(argc, argv, "--positive", "OA");
     const std::string db_path = "./data/spine_records.json";
 
     std::cout << "Configuration:\n";
@@ -282,26 +672,16 @@ int main() {
     std::cout << "  Model: " << model_path << "\n";
     std::cout << "  Database: " << db_path << "\n\n";
 
-    std::cout << "Initializing AI Model...\n";
-    
-    OnnxInferenceEngine inference_engine(model_path, MODEL_TYPE);
-    
-    bool model_loaded = false;
-    try {
-        model_loaded = inference_engine.initialize();
-        if (model_loaded) {
-            std::cout << "  ✓ Model loaded: " << model_path << "\n";
-        } else {
-            std::cout << "  ! Model file not found, using simulation mode\n";
-            std::cout << "  ! For production, download: resnet50_mura.onnx\n";
-        }
-        std::cout << "  ✓ Input size: " << inference_engine.get_input_width() << "x" 
-                  << inference_engine.get_input_height() << "\n";
-        std::cout << "  ✓ Output classes: " << inference_engine.get_num_classes() << "\n\n";
-    } catch (const std::exception& e) {
-        std::cerr << "[ERROR] Failed to initialize inference engine: " << e.what() << "\n";
+    std::cout << "Initializing " << task_name << " CNN...\n";
+    SpineCNN local_cnn;
+    local_cnn.load_weights(model_path);
+    if (!local_cnn.are_weights_loaded()) {
+        std::cerr << "[ERROR] Trained " << task_name << " model not found: " << model_path << "\n";
         return 1;
     }
+    std::cout << "  Model loaded: " << model_path << "\n";
+    std::cout << "  Input size: " << SpineCNN::INPUT_W << "x" << SpineCNN::INPUT_H << "\n";
+    std::cout << "  Output classes: " << negative_name << " / " << positive_name << "\n\n";
 
     UCIVertebralAnalyzer vertebral_analyzer;
     ClinicalScoringSystem clinical_scoring;
@@ -325,9 +705,6 @@ int main() {
     }
     
     std::cout << "  Found " << image_paths.size() << " image(s)\n\n";
-
-    SpineCNN local_cnn;
-    train_local_cnn(local_cnn, image_paths, "./models/spine_model.weights");
 
     SpineRecordDB database(db_path);
     database.load();
@@ -380,19 +757,19 @@ int main() {
             
             double texture_complexity = variance * edge_score;
             
-            std::vector<float> predictions = inference_engine.predict_from_image(
-                raw_img.pixels, raw_img.width, raw_img.height
-            );
+            Tensor cnn_input = local_cnn.preprocess(img_path);
+            Tensor prediction_tensor = local_cnn.forward(cnn_input);
+            const auto& predictions = prediction_tensor.get_data();
+            double prob_normal = predictions[0];
+            double prob_abnormal = predictions[1];
             
-            float prob_normal = predictions[0];
-            float prob_abnormal = predictions[1];
-            
-            std::cout << "\n[DEEP LEARNING - ResNet50 MURA]\n";
-            std::cout << "  Normal:    " << std::fixed << std::setprecision(2) 
+            std::cout << "\n[CUSTOM CNN - " << task_name << "]\n";
+            std::cout << "  " << negative_name << ": " << std::fixed << std::setprecision(2)
                       << (prob_normal * 100.0) << "%\n";
-            std::cout << "  Abnormal:  " << std::fixed << std::setprecision(2) 
+            std::cout << "  " << positive_name << ": " << std::fixed << std::setprecision(2)
                       << (prob_abnormal * 100.0) << "%\n";
-            std::cout << "  Classification: " << (prob_abnormal > 0.5 ? "ABNORMAL" : "Normal") << "\n";
+            std::cout << "  Classification: "
+                      << (prob_abnormal > 0.5 ? positive_name : negative_name) << "\n";
             
             VertebralFeatures vf = VertebralFeatures::extract_from_image_features(
                 mean_intensity, variance, edge_score
@@ -459,7 +836,7 @@ int main() {
             }
             std::cout << "\n";
             
-            double final_score = (prob_abnormal * 40.0 + vertebral_risk * 0.3 + clinical_severity * 0.3);
+            double final_score = prob_abnormal * 100.0;
             final_score = std::min(100.0, final_score);
             
             std::cout << "\n[COMPREHENSIVE ASSESSMENT]\n";
@@ -505,7 +882,7 @@ int main() {
             record.date = DateUtil::today();
             record.risk_score = final_score;
             record.abnormal_prob = prob_abnormal * 100.0;
-            record.classification = (prob_abnormal > 0.5) ? "Abnormal" : "Normal";
+            record.classification = prob_abnormal > 0.5 ? positive_name : negative_name;
             record.image_path = img_path;
             
             database.append(record);

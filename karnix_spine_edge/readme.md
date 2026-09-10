@@ -1,194 +1,571 @@
-# Karnix Spine Screening System v3.0
+# Karnix Spine Edge
 
-**Clinical-Grade AI Bone Abnormality Detection System**
+Karnix Spine Edge is a C++14 research and demonstration project for training small convolutional neural networks on musculoskeletal radiographs and lumbar MRI images. It includes dataset preparation, training, evaluation, atomic checkpoints, terminal telemetry, native SDL2 visualization, JSON result storage, and integration with the host-side KarnixOS interface.
 
-A production-ready, offline spine and bone screening system combining deep learning, structured machine learning, and clinical rule-based scoring.
+This project is not a medical device and is not suitable for clinical diagnosis. Current held-out accuracy is low and all findings must be treated as experimental.
 
-## 🎯 Features
+## Current Status
 
-### 1. **Deep Learning Inference (MURA Dataset)**
-- Pre-trained ResNet50/EfficientNet models
-- ONNX Runtime for efficient offline inference
-- Trained on Stanford's MURA (Musculoskeletal Radiographs) dataset
-- 224x224 input size, binary classification (Normal/Abnormal)
-- **No internet required** - fully offline operation
+The repository currently supports these tasks:
 
-### 2. **UCI Vertebral Column Analysis**
-- Structured ML risk scoring using biomechanical features
-- 6 key measurements: pelvic incidence, pelvic tilt, lumbar lordosis angle, sacral slope, pelvic radius, grade of spondylolisthesis
-- Random Forest classification: Normal, Disk Hernia, Spondylolisthesis
-- Quantitative risk scores (0-100)
-- **Validated**: 71.4% accuracy, 100% spondylolisthesis detection
+| Modality | Task | Dataset status | Model status |
+|---|---|---|---|
+| Knee radiograph | No OA vs osteoarthritis | Automatically downloaded and prepared | Implemented and trained |
+| Lumbar MRI | No stenosis vs stenosis pathology | Automatically downloaded and prepared | Implemented and trained |
+| DEXA/DXA | Normal BMD vs osteoporosis | Import pipeline implemented; no open labeled scan archive bundled | Not trained by default |
+| Vertebral measurements | Normal, disk hernia, spondylolisthesis | Small UCI sample CSV included | Rule-based classifier |
 
-### 3. **Clinical Rule-Based Scoring**
-- **Cobb Angle**: Scoliosis severity classification (mild/moderate/severe)
-- **Vertebral Compression Fractures**: Genant semi-quantitative grading (0-3)
-- **WHO Bone Density**: Osteoporosis classification via T-score
-- **FRAX-inspired Fracture Risk**: 10-year fracture probability
-- **Pfirrmann Disc Degeneration**: Grade 1-5 assessment
-- **Spinal Instability Score**: White-Panjabi criteria (surgical evaluation threshold)
+The project deliberately does not treat ordinary osteoporosis X-rays as DEXA scans. A genuine labeled DEXA image source is required before the DEXA CNN path can train.
 
-### 4. **Comprehensive Reporting**
-- Multi-modal analysis combining all three systems
-- Detailed clinical recommendations
-- Longitudinal tracking with JSON database
-- Processing time: < 100ms per image (with ONNX)
+## Architecture
 
-## 🚀 Quick Start
+```mermaid
+flowchart TD
+    A[Licensed image dataset] --> B[Python dataset preparation]
+    B --> C[64 x 64 grayscale PGM images]
+    C --> D[CSV manifest validation]
+    D --> E[Deterministic shuffled batch loader]
+    E --> F[Custom C++ CNN]
+    F --> G[Cross-entropy loss]
+    G --> H[Analytical backpropagation]
+    H --> I[Online SGD update]
+    I --> J[Epoch metrics]
+    J --> K[Atomic epoch checkpoint]
+    K --> L[Held-out evaluation]
+    L --> M[Native SDL2 tensor visualizer]
+    L --> N[JSON screening records]
+    N --> O[Host KarnixOS interface]
+```
 
-### Voice Control (macOS)
+### CNN Structure
 
-**NEW: Control the system with voice commands + Automated Voice Reports!**
+The same binary CNN architecture is trained separately for OA and MRI:
+
+```text
+Input: 1 x 64 x 64
+  -> Conv2D: 1 to 4 channels, 3 x 3
+  -> ReLU
+  -> MaxPool: 2 x 2
+  -> Conv2D: 4 to 8 channels, 3 x 3
+  -> ReLU
+  -> MaxPool: 2 x 2
+  -> Conv2D: 8 to 16 channels, 3 x 3
+  -> ReLU
+  -> MaxPool: 2 x 2
+  -> Flatten: 16 x 6 x 6 = 576 values
+  -> Dense: 576 to 32
+  -> ReLU
+  -> Dense: 32 to 2
+  -> Softmax
+```
+
+The model has 20,034 trainable parameters stored as double-precision values. OA, MRI, and optional DEXA use separate weight files.
+
+## Training Lifecycle
+
+The C++ training command implements the following stages:
+
+1. **Dataset**: reads a CSV manifest, verifies every referenced image exists, and rejects manifests missing either binary class.
+2. **Preprocessing**: loads the image, converts it to grayscale, resizes it to 64 x 64, and normalizes pixels from $[0,1]$ to approximately $[-1,1]$.
+3. **Batch loader**: shuffles sample indices deterministically for each epoch and presents groups of 16 by default.
+4. **Model**: performs three convolution, ReLU, and pooling blocks followed by two dense layers.
+5. **Loss**: calculates cross-entropy from the predicted probability for the ground-truth class.
+6. **Forward pass**: produces probabilities for the two task-specific classes.
+7. **Backpropagation**: propagates analytical gradients through dense, pooling, activation, and convolution layers.
+8. **Optimizer**: applies online stochastic gradient descent for each sample within the loaded batch. This is not vectorized mini-batch gradient accumulation.
+9. **Epochs**: setup runs three complete dataset passes by default.
+10. **Checkpoint**: saves weights atomically after every epoch and saves the final model separately.
+
+Training stops with an error if the loss or model probabilities become NaN or infinite.
+
+## Datasets
+
+### Knee Osteoarthritis Radiographs
+
+Source: [Knee Osteoarthritis Dataset with Severity Grading](https://www.kaggle.com/datasets/shashwatwork/knee-osteoarthritis-dataset-with-severity)
+
+- License reported by Kaggle: CC BY 4.0
+- Prepared subset: 600 radiographs
+- Training: 480 images, balanced 240 No OA and 240 OA
+- Testing: 120 images, balanced 60 No OA and 60 OA
+- Negative class: Kellgren-Lawrence grade 0
+- Positive class: Kellgren-Lawrence grades 2, 3, and 4
+- Grade 1 is excluded because it represents doubtful OA
+- Deterministic selection seed: `20260909`
+
+The preparation record is generated at `data/osteoarthritis/SOURCE.txt`.
+
+### Lumbar MRI
+
+Source: [Diagnosis Lumbar Spinal Patients MRI Dataset](https://www.kaggle.com/datasets/abdullahkhan70/lumbar-spinal-mri-dataset)
+
+- DOI: `10.34740/KAGGLE/DSV/14332076`
+- License reported by Kaggle: CC0 Public Domain
+- Source archive: 13,686 preprocessed 400 x 400 grayscale MRI images
+- Prepared subset: 600 images
+- Training: 480 images, balanced 240 No Stenosis and 240 pathology
+- Testing: 120 images, balanced 60 No Stenosis and 60 pathology
+- Negative class: No Stenosis
+- Positive class: Herniated Disc or Thecal Sac Compression
+- Deterministic selection seed: `20260909`
+
+The binary merge is necessary because the current C++ CNN has two output classes. Original subtype names remain in the CSV manifests and `data/mri/SOURCE.txt`.
+
+### DEXA/DXA
+
+The code contains a DEXA preparation and training path, but no DEXA model is generated by default. Public searches performed during development found ordinary radiographs, tabular bone-density measurements, and restricted datasets, but not a verified open labeled archive of genuine DEXA scan images suitable for this pipeline.
+
+The importer requires genuine scan exports in this structure:
+
+```text
+dexa-source/
+├── train/
+│   ├── normal/
+│   └── osteoporosis/
+└── test/
+    ├── normal/
+    └── osteoporosis/
+```
+
+Source name, source URL, and license are mandatory. This prevents untraceable images from entering the training pipeline.
+
+### UCI Vertebral Data and Clinical Rules
+
+`data/uci_vertebral_samples.csv` contains a small sample of six biomechanical features:
+
+- Pelvic incidence
+- Pelvic tilt
+- Lumbar lordosis angle
+- Sacral slope
+- Pelvic radius
+- Grade of spondylolisthesis
+
+`UCIVertebralAnalysis.hpp` uses manually encoded decision boundaries and weighted scoring. It does not train a random forest at runtime.
+
+`ClinicalScoring.hpp` contains rule-based calculations inspired by Cobb angle, compression-fracture grading, bone-density thresholds, fracture risk, disc degeneration, and instability scoring. In the generic X-ray screening path, measurements are estimated from image intensity, variance, and edges. They are not obtained from segmentation or calibrated clinical measurements and must not be presented as validated medical measurements.
+
+## Requirements
+
+The automated setup currently targets macOS.
+
+- macOS with `sips`
+- CMake 3.10 or newer
+- Apple Clang with C++14 support
+- Python 3 with `venv`
+- `curl`
+- Homebrew
+- SDL2 and SDL2_ttf for the native visualizer
+- GCC and ncurses for the host KarnixOS application
+- Approximately 1 GB of free disk space for downloaded archives, prepared data, models, and build files
+- Internet access on the first run
+
+`setup.sh` installs Pillow in `karnix_spine_edge/.venv`. On macOS it installs SDL2 and SDL2_ttf with Homebrew if they are absent.
+
+## Quick Start
+
+From the workspace root:
 
 ```bash
-# Interactive voice control mode
-./voice.sh
-
-# Direct voice commands
-./voice.sh setup      # Run system setup
-./voice.sh scan       # Start screening WITH voice summary report
-./voice.sh test       # Run validation tests
-./voice.sh status     # Show system status
-./voice.sh help       # Show all commands
+cd /Users/sudharsans/Documents/Karniiix/karnix_spine_edge
+./setup.sh
 ```
 
-**Voice Report Features:**
-- 🔊 Speaks comprehensive summary after each scan
-- Reports abnormalities, risk categories, clinical findings
-- Provides recommendations based on analysis
-- Natural pauses for clarity
+The command performs the following work:
 
-Voice commands include: setup, scan, test, compile, status, help, exit
+1. Checks dependencies.
+2. Creates the Python virtual environment.
+3. Downloads the OA and MRI archives when missing.
+4. Prepares balanced 600-image subsets.
+5. Builds `spine_cli` and `cnn_visualizer`.
+6. Trains OA and MRI models with detailed terminal telemetry.
+7. Tests every held-out image.
+8. Verifies final epoch checkpoints.
+9. Runs demonstration screening.
+10. Builds the host KarnixOS executable.
+11. Opens native OA and MRI visualization windows unless disabled.
 
-### Manual Compilation
+Useful setup options:
 
 ```bash
-cd karnix_spine_edge
+./setup.sh --no-visualizer
+./setup.sh --force-data
+./setup.sh --launch-os
 
-# Simple compilation
-clang++ -std=c++14 -O3 spine_cli.c++ -o spine_cli
-
-# Or use voice command
-./voice.sh compile
+IMAGE_COUNT=600 MRI_IMAGE_COUNT=600 EPOCHS=3 MRI_EPOCHS=3 BATCH_SIZE=16 ./setup.sh
 ```
 
-### Usage
+`--force-data` redownloads and regenerates prepared subsets. It increases setup time and network usage.
+
+## Detailed Training Output
+
+With `--verbose`, every training image reports:
+
+```text
+[TRAIN] epoch=1/3 batch=1/30 sample=1/480
+        label=OA predicted=NO_OA
+        p_negative=0.6132 p_positive=0.3868
+        loss=0.9499 correct=no time_ms=3.12
+        file=data/osteoarthritis/train/oa/...
+```
+
+Each batch reports mean loss, accuracy, size, and duration. Each epoch reports loss, accuracy, duration, and throughput. Testing reports every prediction followed by accuracy, sensitivity, specificity, confusion matrix, duration, throughput, and average milliseconds per image.
+
+Generated logs:
+
+```text
+models/oa_training_full.log
+models/oa_evaluation_full.log
+models/oa_screening.txt
+models/mri_training_full.log
+models/mri_evaluation_full.log
+models/mri_screening.txt
+```
+
+## Checkpoints and Recovery
+
+Checkpoints are written through a temporary file and renamed only after the complete weight file has been written.
+
+```text
+models/checkpoints/oa/epoch_1.weights
+models/checkpoints/oa/epoch_2.weights
+models/checkpoints/oa/epoch_3.weights
+models/checkpoints/mri/epoch_1.weights
+models/checkpoints/mri/epoch_2.weights
+models/checkpoints/mri/epoch_3.weights
+```
+
+Resume MRI training from a checkpoint:
 
 ```bash
-# Place spine X-ray images in data/images/
-mkdir -p data/images
-cp /path/to/xrays/*.jpg data/images/
-
-# Run screening (voice command)
-./voice.sh scan
-
-# Or run directly
-./spine_cli
-
-# Results displayed in terminal and saved to data/spine_records.json
+./build/spine_cli \
+  --train data/mri/train.csv 1 \
+  --model models/lumbar_mri_cnn.weights \
+  --task LUMBAR_MRI \
+  --negative NO_STENOSIS \
+  --positive STENOSIS \
+  --batch-size 16 \
+  --checkpoint-dir models/checkpoints/mri \
+  --resume models/checkpoints/mri/epoch_3.weights \
+  --verbose
 ```
 
-## 📁 Directory Structure
+SGD currently has no momentum or adaptive state, so resuming the weight checkpoint restores all optimizer-dependent state used by this implementation.
 
+## Binary Weight Format and JARVIS Loading
+
+`SpineCNN::save_weights()` and `SpineCNN::load_weights()` define a small native binary format. The first eight bytes are the ASCII marker:
+
+```text
+KSOA0001
 ```
+
+Despite its name, this marker identifies serializer version 1, not the medical task. Both OA and MRI files use it because they share the same `SpineCNN` architecture. The file does not contain modality, class names, tensor dimensions, preprocessing metadata, accuracy, epoch number, or optimizer state.
+
+Each trainable layer is then stored in this order:
+
+```text
+native size_t weight_count
+weight_count native double values
+native size_t bias_count
+bias_count native double values
+```
+
+The five serialized layers and exact Apple Silicon layout are:
+
+| Byte offset | Layer | Logical shape | Weights | Biases |
+|---:|---|---|---:|---:|
+| 0 | Magic `KSOA0001` | 8 bytes | - | - |
+| 8 | Conv1 | `[4, 1, 3, 3]` | 36 | 4 |
+| 344 | Conv2 | `[8, 4, 3, 3]` | 288 | 8 |
+| 2728 | Conv3 | `[16, 8, 3, 3]` | 1,152 | 16 |
+| 12088 | Dense1 | `[32, 576]` | 18,432 | 32 |
+| 159816 | Dense2 | `[2, 32]` | 64 | 2 |
+
+Total trainable values: 20,034 doubles. The file also contains ten 8-byte count fields and the 8-byte magic value:
+
+$$
+8 + (20{,}034 \times 8) + (10 \times 8) = 160{,}360\text{ bytes}
+$$
+
+ReLU, max-pooling, flatten, and Softmax contain no learned parameters and therefore write no blocks.
+
+The current format uses native `size_t`, native `double`, and native byte order. The generated files were written on 64-bit little-endian Apple Silicon, where `size_t` and `double` are both eight bytes. This format is not guaranteed to be portable to a machine with a different ABI or byte order.
+
+JARVIS must load a model as follows:
+
+1. Select the model and class mapping externally:
+  - `osteoarthritis_cnn.weights`: index 0 = No OA, index 1 = OA.
+  - `lumbar_mri_cnn.weights`: index 0 = No Stenosis, index 1 = Stenosis.
+2. Construct the exact `SpineCNN` architecture before reading parameters.
+3. Read and compare all eight magic bytes with `KSOA0001`.
+4. Read the five layer blocks in the exact order above.
+5. Require each stored count to match the already-constructed tensor size.
+6. Reject truncated files and files with trailing bytes.
+7. Preprocess input as one grayscale 64 x 64 plane normalized with `(pixel - 0.5) / 0.5`.
+8. Run `forward()` and interpret output indices using the external task mapping.
+
+The hardened C++ loader performs steps 2 through 6. It does not infer the task from the filename or header.
+
+The OA and MRI files have equal sizes because their architectures are identical. Their SHA-256 hashes and 18,844 of 20,034 parameter values differ, so they are not the same learned model. Both files were parsed to exactly byte 160,360 with zero trailing bytes.
+
+## Manual Commands
+
+Build both executables:
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+Train OA:
+
+```bash
+mkdir -p models/checkpoints/oa
+./build/spine_cli \
+  --train data/osteoarthritis/train.csv 3 \
+  --batch-size 16 \
+  --checkpoint-dir models/checkpoints/oa \
+  --verbose
+```
+
+Evaluate OA:
+
+```bash
+./build/spine_cli \
+  --evaluate data/osteoarthritis/test.csv \
+  --verbose
+```
+
+Train MRI:
+
+```bash
+mkdir -p models/checkpoints/mri
+./build/spine_cli \
+  --train data/mri/train.csv 3 \
+  --model models/lumbar_mri_cnn.weights \
+  --task LUMBAR_MRI \
+  --negative NO_STENOSIS \
+  --positive STENOSIS \
+  --batch-size 16 \
+  --checkpoint-dir models/checkpoints/mri \
+  --verbose
+```
+
+Evaluate MRI:
+
+```bash
+./build/spine_cli \
+  --evaluate data/mri/test.csv \
+  --model models/lumbar_mri_cnn.weights \
+  --task LUMBAR_MRI \
+  --negative NO_STENOSIS \
+  --positive STENOSIS \
+  --verbose
+```
+
+## Native C++ Visualizer
+
+`cnn_visualizer` is an SDL2 C++ application. It does not use a browser. It loads the trained model, performs a real traced forward pass, and displays:
+
+- The actual prepared image
+- A moving 3 x 3 convolution window
+- Intermediate convolution tensors
+- ReLU feature maps
+- Max-pooling outputs
+- Dense activations
+- Softmax probabilities
+- Ground truth and predicted class
+
+Controls:
+
+```text
+Space        Play or pause
+Left/Right   Move between network stages
+Up/Down      Change animation speed
+Esc          Close
+```
+
+Launch OA visualization:
+
+```bash
+./build/cnn_visualizer \
+  data/osteoarthritis/screen \
+  models/osteoarthritis_cnn.weights \
+  OSTEOARTHRITIS NO_OA OA
+```
+
+Launch MRI visualization:
+
+```bash
+./build/cnn_visualizer \
+  data/mri/screen \
+  models/lumbar_mri_cnn.weights \
+  LUMBAR_MRI NO_STENOSIS STENOSIS
+```
+
+## DEXA Training
+
+After obtaining a licensed, labeled, genuine DEXA image dataset:
+
+```bash
+DEXA_SOURCE=/absolute/path/to/dexa-source \
+DEXA_SOURCE_NAME="Dataset name" \
+DEXA_SOURCE_URL="https://dataset-source" \
+DEXA_LICENSE="License name" \
+DEXA_IMAGE_COUNT=600 \
+./setup.sh
+```
+
+This produces:
+
+```text
+data/dexa/train.csv
+data/dexa/test.csv
+data/dexa/SOURCE.txt
+models/dexa_cnn.weights
+models/checkpoints/dexa/
+models/dexa_training_full.log
+models/dexa_evaluation_full.log
+```
+
+The setup stops if either class is missing, there are too few images, source metadata is absent, an image cannot be opened, or model output becomes non-finite.
+
+## Measured Results
+
+The following values were measured on the current Apple M1 development machine using 600 prepared images per task, three epochs, and batch-loader size 16. Timing changes with hardware and whether data is already downloaded.
+
+| Task | Final training accuracy | Test accuracy | Sensitivity | Specificity | Training time | Test time |
+|---|---:|---:|---:|---:|---:|---:|
+| Knee OA | 69.17% | 57.50% | 56.67% | 58.33% | 15.23 s | 0.42 s |
+| Lumbar MRI stenosis | 74.79% | 45.00% | 36.67% | 53.33% | 16.53 s | 0.39 s |
+
+The most recent complete cached-data setup took approximately 40 seconds. A first run takes longer because it downloads approximately 205 MB of OA data and 351 MB of MRI data.
+
+These results are weak. The project demonstrates the complete ML engineering flow, but the models are not accurate enough for diagnosis or deployment.
+
+## KarnixOS Integration
+
+There are two different OS surfaces in this repository.
+
+### Host KarnixOS
+
+`os/main.c` builds a normal macOS terminal application using ncurses:
+
+```bash
+cd /Users/sudharsans/Documents/Karniiix
+make -f os/Makefile
+./KarnixOS
+```
+
+It reads:
+
+```text
+karnix_spine_edge/data/spine_records.json
+karnix_spine_edge/data/uci_vertebral_samples.csv
+```
+
+Available shell commands include `help`, `train`, `scan`, `dir`, `uci`, `clear`, `up`, `down`, and `quit`. The `train` and `scan` commands launch the host C++ Spine Edge executable. The current OS command integration targets the OA workflow; MRI is launched directly through `spine_cli` or `cnn_visualizer`.
+
+### Bare-Metal Karnix Kernel
+
+`os/karnix_kernel/` is a separate freestanding x86 kernel intended for QEMU. It cannot execute the macOS C++ binary, use SDL2, download datasets, or train the CNN because it has no hosted C++ runtime, process loader, or normal filesystem.
+
+Its medical records are compiled into `db_data.h`. `db_exporter.js` can generate that header from PostgreSQL or fallback records. This is display/export integration, not runtime ML execution inside the kernel.
+
+## Project Layout
+
+```text
 karnix_spine_edge/
-├── spine_cli.c++              # Main application (fully automated)
-├── voice.sh                   # Voice control interface (macOS)
-├── voice_report.sh            # Automated voice reporting after scan
-├── voice_control.py           # Advanced voice control (Python)
-├── demo_voice_report.sh       # Voice report demonstration
-├── setup.sh                   # Complete system setup & validation
-├── setup_models.sh            # Model setup script
-├── test_uci_vertebral.c++     # UCI validation test program
-├── readme.md                  # This file
-├── VOICE_CONTROL.md           # Voice control guide
-├── VOICE_REPORT_GUIDE.md      # Voice reporting reference
+├── CMakeLists.txt
+├── setup.sh
+├── spine_cli.c++
+├── cnn_visualizer.c++
+├── prepare_oa_dataset.py
+├── prepare_mri_dataset.py
+├── prepare_dexa_dataset.py
 ├── medical/
-│   ├── OnnxInference.hpp      # ONNX Runtime interface
-│   ├── UCIVertebralAnalysis.hpp  # UCI dataset integration
-│   ├── ClinicalScoring.hpp    # Rule-based clinical system
-│   └── SpineEvaluationUtils.hpp  # Database & reporting
+│   ├── SpineCNN.hpp
+│   ├── SpineEvaluationUtils.hpp
+│   ├── UCIVertebralAnalysis.hpp
+│   ├── ClinicalScoring.hpp
+│   └── OnnxInference.hpp
+├── data/
+│   ├── cache/
+│   ├── osteoarthritis/
+│   ├── mri/
+│   ├── images/
+│   ├── uci_vertebral_samples.csv
+│   └── spine_records.json
 ├── models/
-│   └── README.txt             # Model download instructions
-└── data/
-    ├── images/                # Input X-ray images
-    └── spine_records.json     # Output database
+│   ├── osteoarthritis_cnn.weights
+│   ├── lumbar_mri_cnn.weights
+│   ├── checkpoints/
+│   └── training and evaluation logs
+└── build/
+    ├── spine_cli
+    └── cnn_visualizer
 ```
 
-## 📊 Output Example
+Downloaded datasets, prepared images, generated models, logs, virtual environments, and build outputs are excluded from Git where configured because they can be regenerated by setup.
 
-```
-================================================================================
-  KARNIX SPINE SCREENING SYSTEM v3.0
-  Clinical-Grade AI Bone Abnormality Detection
-================================================================================
+## Legacy Components
 
-Image 1/3: ./data/images/spine_001.jpg
+`OnnxInference.hpp` and model setup notes remain in the repository from an earlier ResNet/ONNX design. The active OA and MRI training paths described in this README use the custom `SpineCNN` weights, not a ResNet50 ONNX file. The ONNX implementation contains a simulation fallback and should not be presented as active production inference.
 
-[DEEP LEARNING - ResNet50 MURA]
-  Normal:    32.45%
-  Abnormal:  67.55%
-  Classification: ABNORMAL
+An earlier version trained or loaded `models/spine_model.weights` while the main screening loop obtained predictions from `OnnxInferenceEngine`. In that version, the locally trained `SpineCNN` was not clearly connected to the final prediction path. That limitation has been removed from the current implementation:
 
-[UCI VERTEBRAL COLUMN ANALYSIS]
-  Pelvic Incidence:      58.3°
-  Pathology:             Disk Hernia
-  Risk Score:            64.2/100
+- OA screening loads `models/osteoarthritis_cnn.weights` into `SpineCNN` and calls `SpineCNN::preprocess()` followed by `SpineCNN::forward()`.
+- MRI evaluation and visualization load `models/lumbar_mri_cnn.weights` into the same custom architecture using MRI-specific class labels.
+- `models/spine_model.weights` is a legacy artifact and is not the active OA or MRI model.
+- `OnnxInferenceEngine` is not used by the active OA or MRI prediction path.
 
-[CLINICAL ASSESSMENT]
-  Scoliosis:             Moderate (28.4°)
-  Compression Fracture:  Grade 2 detected
-  Bone Density:          Osteopenia (T-score: -1.8)
-  10-Year Fracture Risk: High (24%)
-  Instability Score:     6/13 [SURGICAL EVALUATION RECOMMENDED]
+### MURA/ResNet50 Training Time
 
-[COMPREHENSIVE ASSESSMENT]
-  Overall Risk Score:    68.7/100
-  Risk Category:         HIGH
+No defensible MURA training duration is available from this repository. The repository does not contain:
 
-[CLINICAL RECOMMENDATIONS]
-  • Immediate clinical evaluation recommended
-  • Consider MRI or CT scan for detailed assessment
-  • Orthopedic/neurosurgical consultation advised
+- A complete MURA training script
+- MURA training logs
+- A recorded epoch count
+- A recorded batch size
+- Training hardware details
+- Start/end timestamps or total training duration
+- A trained `resnet50_mura.onnx` artifact produced by this project
 
-Processing Time: 87.3 ms
-```
+The MURA references and `models/README.txt` describe how a ResNet50 model could be obtained, trained externally, and exported to ONNX. `OnnxInference.hpp` contains an incomplete ONNX integration and a feature-based simulation fallback. Neither is evidence that MURA training occurred in this repository.
 
-## 🔬 Technical Details
+Therefore, the project must report the MURA/ResNet50 training time as **unknown**. The measured training times elsewhere in this README apply only to the custom 20,034-parameter `SpineCNN` trained on the prepared OA and lumbar MRI subsets.
 
-### MURA Dataset
-- **Source**: Stanford ML Group
-- **Size**: 40,561 musculoskeletal radiographs
-- **Classes**: Normal vs Abnormal
+Voice scripts also predate the current multimodal command-line interface. They may still launch the default screening flow, but they are not the primary setup or training path documented here.
 
-### UCI Vertebral Column Dataset
-- **Source**: UCI Machine Learning Repository
-- **Instances**: 310 patients
-- **Features**: 6 biomechanical attributes
-- **Validated Performance**: 71.4% overall accuracy (28 test cases)
-  - Normal: 66.7% (6/9 correct)
-  - Disk Hernia: 50.0% (5/10 correct)
-  - Spondylolisthesis: 100.0% (9/9 correct)
+## Known Limitations
 
-### Clinical Scoring Systems
-- **Cobb Angle**: Gold standard for scoliosis
-- **Genant Grading**: Vertebral fracture assessment
-- **WHO T-Score**: Bone mineral density
-- **FRAX**: Fracture risk assessment
-- **Pfirrmann Scale**: Disc degeneration
+- Test accuracy is currently close to chance for both tasks.
+- The CNN is small and trained for only three epochs by default.
+- The batch loader groups and shuffles samples, but SGD updates occur per sample rather than from accumulated batch gradients.
+- There is no augmentation, dropout, weight decay, learning-rate scheduler, early stopping, or patient-level cross-validation.
+- The curated archive does not expose patient identifiers in the prepared manifest, so patient-level leakage cannot be ruled out.
+- MRI uses a binary merge instead of preserving all three source classes.
+- DEXA requires a separately licensed genuine scan-image dataset.
+- The generic X-ray clinical scores are heuristic estimates, not calibrated measurements.
+- `spine_records.json` grows on repeated screening runs unless it is cleared manually.
+- The native visualizer is currently configured for macOS/Homebrew SDL paths.
+- No component has regulatory approval.
 
-## 🔄 Simulation Mode
+## Appropriate Demo Claims
 
-If ONNX models are not available, the system runs in sophisticated simulation mode with feature-based inference. Suitable for development and testing.
+It is accurate to say that the project:
 
-**For production clinical use, download actual trained models** (see models/README.txt)
+- Implements convolution, pooling, activation, dense layers, backpropagation, and SGD in C++.
+- Downloads and prepares licensed OA and MRI datasets.
+- Trains separate binary models for radiographs and MRI.
+- Logs every training and test sample.
+- Uses deterministic epoch shuffling and atomic checkpoints.
+- Can resume training from a saved checkpoint.
+- Visualizes real intermediate tensors in a native C++ window.
+- Exports results for a host-side OS interface.
 
-## ⚕️ Medical Disclaimer
+It is not accurate to claim radiologist-level performance, clinical-grade diagnosis, 100% detection, validated treatment recommendations, or a trained DEXA model.
 
-This system is for research and educational purposes. Not approved for clinical diagnosis. All findings should be verified by qualified medical professionals.
+## Medical Disclaimer
 
----
-
-**Version**: 3.0  
-**Updated**: February 2026  
-**Framework**: Karnix C++14 + ONNX Runtime
+Karnix Spine Edge is an educational and research prototype. It must not be used to diagnose, exclude, monitor, or recommend treatment for any medical condition. Predictions and derived scores require independent review by qualified healthcare professionals using validated clinical systems.

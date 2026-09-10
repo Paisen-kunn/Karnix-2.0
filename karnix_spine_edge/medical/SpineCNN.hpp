@@ -49,6 +49,18 @@ struct RawImage {
 
 namespace ImageIO {
 
+    inline unsigned int little_endian_u32(const unsigned char* bytes) {
+        return static_cast<unsigned int>(bytes[0]) |
+               (static_cast<unsigned int>(bytes[1]) << 8) |
+               (static_cast<unsigned int>(bytes[2]) << 16) |
+               (static_cast<unsigned int>(bytes[3]) << 24);
+    }
+
+    inline unsigned int little_endian_u16(const unsigned char* bytes) {
+        return static_cast<unsigned int>(bytes[0]) |
+               (static_cast<unsigned int>(bytes[1]) << 8);
+    }
+
     inline void skip_ws(std::istream& is) {
         while (true) {
             int c = is.peek();
@@ -93,6 +105,46 @@ namespace ImageIO {
         return img;
     }
 
+    inline RawImage load_bmp(const std::string& path) {
+        std::ifstream file(path, std::ios::binary);
+        if (!file.is_open()) throw std::runtime_error("Cannot open BMP: " + path);
+        unsigned char header[54];
+        file.read(reinterpret_cast<char*>(header), sizeof(header));
+        if (!file || header[0] != 'B' || header[1] != 'M') {
+            throw std::runtime_error("Invalid BMP: " + path);
+        }
+        int width = static_cast<int>(little_endian_u32(header + 18));
+        int signed_height = static_cast<int>(little_endian_u32(header + 22));
+        bool top_down = signed_height < 0;
+        int height = top_down ? -signed_height : signed_height;
+        int bits_per_pixel = static_cast<int>(little_endian_u16(header + 28));
+        unsigned int pixel_offset = little_endian_u32(header + 10);
+        if (width <= 0 || height <= 0 || (bits_per_pixel != 24 && bits_per_pixel != 32)) {
+            throw std::runtime_error("Unsupported BMP layout: " + path);
+        }
+        int bytes_per_pixel = bits_per_pixel / 8;
+        int row_size = ((width * bytes_per_pixel + 3) / 4) * 4;
+        std::vector<unsigned char> row(row_size);
+        RawImage image;
+        image.width = width;
+        image.height = height;
+        image.pixels.resize(width * height);
+        file.seekg(pixel_offset, std::ios::beg);
+        for (int source_y = 0; source_y < height; ++source_y) {
+            file.read(reinterpret_cast<char*>(row.data()), row.size());
+            if (!file) throw std::runtime_error("Truncated BMP: " + path);
+            int target_y = top_down ? source_y : height - 1 - source_y;
+            for (int x = 0; x < width; ++x) {
+                unsigned char blue = row[x * bytes_per_pixel];
+                unsigned char green = row[x * bytes_per_pixel + 1];
+                unsigned char red = row[x * bytes_per_pixel + 2];
+                image.pixels[target_y * width + x] =
+                    (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0;
+            }
+        }
+        return image;
+    }
+
     inline std::string ext(const std::string& p) {
         auto d = p.rfind('.');
         if (d == std::string::npos) return "";
@@ -124,8 +176,9 @@ namespace ImageIO {
     inline RawImage load_image(const std::string& path) {
         std::string e = ext(path);
         if (e == "ppm" || e == "pgm" || e == "pbm") return load_ppm(path);
+        if (e == "bmp") return load_bmp(path);
         if (e == "jpg" || e == "jpeg" || e == "png" ||
-            e == "tiff" || e == "tif"  || e == "bmp") return convert_via_sips(path);
+            e == "tiff" || e == "tif") return convert_via_sips(path);
         // Unknown extension: try PPM parser directly
         return load_ppm(path);
     }
@@ -169,30 +222,45 @@ inline RawImage resize_bilinear(const RawImage& src, int target_h, int target_w)
 /* ─────────────────────────────────────────────────────────────────────────── */
 class SpineCNN {
 public:
+    struct ForwardTrace {
+        Tensor input;
+        Tensor conv1;
+        Tensor relu1;
+        Tensor pool1;
+        Tensor conv2;
+        Tensor relu2;
+        Tensor pool2;
+        Tensor conv3;
+        Tensor relu3;
+        Tensor pool3;
+        Tensor dense;
+        Tensor probabilities;
+    };
+
     /* ── Architecture constants ── */
-    static constexpr int INPUT_H   = 128;
-    static constexpr int INPUT_W   = 128;
+    static constexpr int INPUT_H   = 64;
+    static constexpr int INPUT_W   = 64;
     static constexpr int INPUT_C   = 1;
 
-    // After Conv1(no-pad,k=3): 126×126; MaxPool(2): 63×63
-    // After Conv2(no-pad,k=3): 61×61;  MaxPool(2): 30×30
-    // After Conv3(no-pad,k=3): 28×28;  MaxPool(2): 14×14
-    static constexpr int FLAT_SIZE = 32 * 14 * 14;   // 6272
-    static constexpr int FC1_OUT   = 128;
+    // After Conv1(no-pad,k=3): 62×62; MaxPool(2): 31×31
+    // After Conv2(no-pad,k=3): 29×29; MaxPool(2): 14×14
+    // After Conv3(no-pad,k=3): 12×12; MaxPool(2): 6×6
+    static constexpr int FLAT_SIZE = 16 * 6 * 6;
+    static constexpr int FC1_OUT   = 32;
     static constexpr int NUM_CLASS = 2;
 
 private:
     // Layers
-    ConvolutionLayer conv1;   //  1→8,  k=3
-    ConvolutionLayer conv2;   //  8→16, k=3
-    ConvolutionLayer conv3;   // 16→32, k=3
+    ConvolutionLayer conv1;   // 1→4, k=3
+    ConvolutionLayer conv2;   // 4→8, k=3
+    ConvolutionLayer conv3;   // 8→16, k=3
 
     ActivationFunctions::ReLU relu1, relu2, relu3;  // conv block activations
     ActivationFunctions::ReLU relu_fc;              // FC1 activation (SEPARATE instance)
     MaxPoolingLayer pool1, pool2, pool3;
 
-    FullyConnectedLayer fc1;   // 6272→128
-    FullyConnectedLayer fc2;   // 128→2
+    FullyConnectedLayer fc1;
+    FullyConnectedLayer fc2;
     ActivationFunctions::Softmax softmax;
 
     // Cached for heatmap
@@ -239,13 +307,21 @@ private:
         os.write(reinterpret_cast<const char*>(&bs), sizeof(bs));
         os.write(reinterpret_cast<const char*>(b.data()), bs*sizeof(double));
     }
-    static void read_layer_weights(std::istream& is, ConvolutionLayer& l) {
+    static void read_layer_weights(std::istream& is, ConvolutionLayer& l,
+                                   const std::string& layer_name) {
         std::size_t ws; is.read(reinterpret_cast<char*>(&ws), sizeof(ws));
-        auto& w = l.get_weights().get_data(); w.resize(ws);
+        auto& w = l.get_weights().get_data();
+        if (!is || ws != w.size()) {
+            throw std::runtime_error("Invalid weight count for " + layer_name);
+        }
         is.read(reinterpret_cast<char*>(w.data()), ws*sizeof(double));
         std::size_t bs; is.read(reinterpret_cast<char*>(&bs), sizeof(bs));
-        auto& b = l.get_bias().get_data(); b.resize(bs);
+        auto& b = l.get_bias().get_data();
+        if (!is || bs != b.size()) {
+            throw std::runtime_error("Invalid bias count for " + layer_name);
+        }
         is.read(reinterpret_cast<char*>(b.data()), bs*sizeof(double));
+        if (!is) throw std::runtime_error("Truncated data for " + layer_name);
     }
     static void write_fc_weights(std::ostream& os, FullyConnectedLayer& l) {
         const auto& w = l.get_weights().get_data();
@@ -256,20 +332,28 @@ private:
         os.write(reinterpret_cast<const char*>(&bs), sizeof(bs));
         os.write(reinterpret_cast<const char*>(b.data()), bs*sizeof(double));
     }
-    static void read_fc_weights(std::istream& is, FullyConnectedLayer& l) {
+    static void read_fc_weights(std::istream& is, FullyConnectedLayer& l,
+                                const std::string& layer_name) {
         std::size_t ws; is.read(reinterpret_cast<char*>(&ws), sizeof(ws));
-        auto& w = l.get_weights().get_data(); w.resize(ws);
+        auto& w = l.get_weights().get_data();
+        if (!is || ws != w.size()) {
+            throw std::runtime_error("Invalid weight count for " + layer_name);
+        }
         is.read(reinterpret_cast<char*>(w.data()), ws*sizeof(double));
         std::size_t bs; is.read(reinterpret_cast<char*>(&bs), sizeof(bs));
-        auto& b = l.get_bias().get_data(); b.resize(bs);
+        auto& b = l.get_bias().get_data();
+        if (!is || bs != b.size()) {
+            throw std::runtime_error("Invalid bias count for " + layer_name);
+        }
         is.read(reinterpret_cast<char*>(b.data()), bs*sizeof(double));
+        if (!is) throw std::runtime_error("Truncated data for " + layer_name);
     }
 
 public:
     SpineCNN()
-        : conv1(1,  8, 3, 1, 0, true),
-          conv2(8,  16, 3, 1, 0, true),
-          conv3(16, 32, 3, 1, 0, true),
+                : conv1(1, 4, 3, 1, 0, true),
+                    conv2(4, 8, 3, 1, 0, true),
+                    conv3(8, 16, 3, 1, 0, true),
           pool1(2), pool2(2), pool3(2),
           fc1(FLAT_SIZE, FC1_OUT, true),
           fc2(FC1_OUT, NUM_CLASS, true)
@@ -277,18 +361,29 @@ public:
 
     void load_weights(const std::string& path) {
         std::ifstream f(path, std::ios::binary);
-        if (!f.is_open()) return;   // silently use random weights
-        read_layer_weights(f, conv1);
-        read_layer_weights(f, conv2);
-        read_layer_weights(f, conv3);
-        read_fc_weights   (f, fc1);
-        read_fc_weights   (f, fc2);
+        if (!f.is_open()) return;
+        const char expected_magic[8] = {'K','S','O','A','0','0','0','1'};
+        char magic[8];
+        f.read(magic, sizeof(magic));
+        if (!f || std::memcmp(magic, expected_magic, sizeof(magic)) != 0) return;
+        read_layer_weights(f, conv1, "conv1");
+        read_layer_weights(f, conv2, "conv2");
+        read_layer_weights(f, conv3, "conv3");
+        read_fc_weights   (f, fc1, "fc1");
+        read_fc_weights   (f, fc2, "fc2");
+        std::streampos parsed_size = f.tellg();
+        f.seekg(0, std::ios::end);
+        if (!f || f.tellg() != parsed_size) {
+            throw std::runtime_error("Model contains unexpected trailing data: " + path);
+        }
         weights_loaded = true;
     }
 
     void save_weights(const std::string& path) const {
         std::ofstream f(path, std::ios::binary);
         if (!f.is_open()) throw std::runtime_error("Cannot write: " + path);
+        const char magic[8] = {'K','S','O','A','0','0','0','1'};
+        f.write(magic, sizeof(magic));
         write_layer_weights(f, const_cast<ConvolutionLayer&>(conv1));
         write_layer_weights(f, const_cast<ConvolutionLayer&>(conv2));
         write_layer_weights(f, const_cast<ConvolutionLayer&>(conv3));
@@ -300,12 +395,7 @@ public:
 
     /* ── Stats ── */
     int get_param_count() const {
-        // Conv1: 8*1*3*3 + 8  = 80
-        // Conv2: 16*8*3*3 + 16 = 1168
-        // Conv3: 32*16*3*3 + 32 = 4640
-        // FC1: 6272*128 + 128 = 802 944
-        // FC2: 128*2 + 2 = 258
-        return 80 + 1168 + 4640 + 802944 + 258;
+        return 40 + 296 + 1168 + 18464 + 66;
     }
 
     double get_model_size_mb() const {
@@ -328,19 +418,38 @@ public:
     Tensor forward(const Tensor& input) {
         // Block 1
         Tensor r1 = relu1.forward(conv1.forward(input));
-        Tensor p1 = pool1.forward(r1);                      // [8,63,63]
+        Tensor p1 = pool1.forward(r1);
         // Block 2
         Tensor r2 = relu2.forward(conv2.forward(p1));
-        Tensor p2 = pool2.forward(r2);                      // [16,30,30]
+        Tensor p2 = pool2.forward(r2);
         // Block 3
         Tensor r3 = relu3.forward(conv3.forward(p2));
         last_conv_act = r3;                                 // heatmap cache
-        Tensor p3 = pool3.forward(r3);                      // [32,14,14]
+        Tensor p3 = pool3.forward(r3);
         // FC
-        Tensor flat   = flatten(p3);                        // [6272]
-        Tensor h      = relu_fc.forward(fc1.forward(flat)); // [128] uses relu_fc
-        Tensor probs  = softmax.forward(fc2.forward(h));    // [2]
+        Tensor flat   = flatten(p3);
+        Tensor h      = relu_fc.forward(fc1.forward(flat));
+        Tensor probs  = softmax.forward(fc2.forward(h));
         return probs;
+    }
+
+    ForwardTrace forward_with_trace(const Tensor& input) {
+        ForwardTrace trace;
+        trace.input = input;
+        trace.conv1 = conv1.forward(trace.input);
+        trace.relu1 = relu1.forward(trace.conv1);
+        trace.pool1 = pool1.forward(trace.relu1);
+        trace.conv2 = conv2.forward(trace.pool1);
+        trace.relu2 = relu2.forward(trace.conv2);
+        trace.pool2 = pool2.forward(trace.relu2);
+        trace.conv3 = conv3.forward(trace.pool2);
+        trace.relu3 = relu3.forward(trace.conv3);
+        last_conv_act = trace.relu3;
+        trace.pool3 = pool3.forward(trace.relu3);
+        Tensor flat = flatten(trace.pool3);
+        trace.dense = relu_fc.forward(fc1.forward(flat));
+        trace.probabilities = softmax.forward(fc2.forward(trace.dense));
+        return trace;
     }
 
     /* ── Training: one SGD step, returns cross-entropy loss ── */
@@ -373,10 +482,10 @@ public:
         g   = fc2.backward(g);                                         // [128]
         g   = relu_fc.backward(g);                                     // [128]
         g   = fc1.backward(g);                                         // [6272]
-        Tensor g3d = unflatten(g, 32, 14, 14);                        // [32,14,14]
-        g3d = conv3.backward(relu3.backward(pool3.backward(g3d)));    // [16,30,30]
-        g3d = conv2.backward(relu2.backward(pool2.backward(g3d)));    // [8,63,63]
-        conv1.backward(relu1.backward(pool1.backward(g3d)));          // input grad (discarded)
+        Tensor g3d = unflatten(g, 16, 6, 6);
+        g3d = conv3.backward(relu3.backward(pool3.backward(g3d)));
+        g3d = conv2.backward(relu2.backward(pool2.backward(g3d)));
+        conv1.backward(relu1.backward(pool1.backward(g3d)));
 
         /* SGD weight update */
         sgd_conv(conv1, lr); sgd_conv(conv2, lr); sgd_conv(conv3, lr);

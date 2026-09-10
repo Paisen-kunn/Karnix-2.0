@@ -1,0 +1,7 @@
+MURA_ABNORMALITY TEST RESULTS
+Images: 20
+Accuracy: 50.00%
+Sensitivity: 100.00%
+Specificity: 0.00%
+TN=0 FP=10 FN=0 TP=10
+TEST DURATION: 0.11 seconds | 184.90 images/s | average 5.41 ms/image

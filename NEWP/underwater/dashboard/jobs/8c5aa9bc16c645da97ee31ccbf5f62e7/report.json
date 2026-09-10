@@ -1,0 +1,92 @@
+{
+  "detections": [
+    {
+      "id": "det-0000",
+      "label": "pipe",
+      "confidence": 0.5711,
+      "confidence_percent": 57.1,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 37,
+        "y": 0,
+        "w": 39,
+        "h": 240
+      },
+      "size_m": {
+        "width": 6.126,
+        "height": 37.696
+      },
+      "range_m": 30.0,
+      "image": "ship-150.png",
+      "features": {
+        "detector": "acoustic_saliency",
+        "area_px": 4288.0,
+        "aspect_ratio": 0.163,
+        "shadow_ratio": 0.012,
+        "contrast_ratio": 1.738,
+        "snr_dB": 8.66,
+        "peak_intensity": 255
+      }
+    },
+    {
+      "id": "det-0001",
+      "label": "pipe",
+      "confidence": 0.5561,
+      "confidence_percent": 55.6,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 180,
+        "y": 552,
+        "w": 15,
+        "h": 89
+      },
+      "size_m": {
+        "width": 2.356,
+        "height": 13.979
+      },
+      "range_m": 30.0,
+      "image": "ship-150.png",
+      "features": {
+        "detector": "acoustic_saliency",
+        "area_px": 767.5,
+        "aspect_ratio": 0.169,
+        "shadow_ratio": 0.0,
+        "contrast_ratio": 1.701,
+        "snr_dB": 7.85,
+        "peak_intensity": 252
+      }
+    },
+    {
+      "id": "det-0002",
+      "label": "shipwreck",
+      "confidence": 0.5508,
+      "confidence_percent": 55.1,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 109,
+        "y": 451,
+        "w": 38,
+        "h": 78
+      },
+      "size_m": {
+        "width": 5.969,
+        "height": 12.251
+      },
+      "range_m": 30.0,
+      "image": "ship-150.png",
+      "features": {
+        "detector": "acoustic_saliency",
+        "area_px": 838.0,
+        "aspect_ratio": 0.487,
+        "shadow_ratio": 0.016,
+        "contrast_ratio": 1.378,
+        "snr_dB": 9.19,
+        "peak_intensity": 254
+      }
+    }
+  ],
+  "count": 3
+}

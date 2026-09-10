@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karnix OA CNN Visualizer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">KARNIX SPINE EDGE</p>
+      <h1>Osteoarthritis CNN Visualizer</h1>
+    </div>
+    <div class="model-status"><span></span> C++ model connected</div>
+  </header>
+
+  <main>
+    <section class="workspace">
+      <div class="scan-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">SOURCE RADIOGRAPH</p>
+            <h2 id="imageName">Loading image...</h2>
+          </div>
+          <div class="counter"><strong id="currentIndex">01</strong><span>/ 10</span></div>
+        </div>
+        <div class="xray-stage">
+          <canvas id="xrayCanvas" width="512" height="512" aria-label="Knee X-ray"></canvas>
+          <div class="scan-line"></div>
+          <div class="corner top-left"></div><div class="corner top-right"></div>
+          <div class="corner bottom-left"></div><div class="corner bottom-right"></div>
+        </div>
+        <div class="ground-truth">Dataset label <strong id="knownLabel">--</strong></div>
+      </div>
+
+      <div class="network-panel">
+        <div class="panel-heading compact">
+          <div>
+            <p class="section-label">LIVE FORWARD PASS</p>
+            <h2 id="stageTitle">Input normalization</h2>
+          </div>
+          <div class="pulse-bars"><i></i><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="feature-grid" id="featureGrid">
+          <canvas width="128" height="128"></canvas>
+          <canvas width="128" height="128"></canvas>
+          <canvas width="128" height="128"></canvas>
+          <canvas width="128" height="128"></canvas>
+        </div>
+
+        <div class="pipeline" id="pipeline">
+          <div class="node active" data-stage="0"><span>64×64</span><strong>Input</strong></div>
+          <div class="connector"></div>
+          <div class="node" data-stage="1"><span>4 maps</span><strong>Conv 3×3</strong></div>
+          <div class="connector"></div>
+          <div class="node" data-stage="2"><span>31×31</span><strong>MaxPool</strong></div>
+          <div class="connector"></div>
+          <div class="node" data-stage="3"><span>16 maps</span><strong>Deep Conv</strong></div>
+          <div class="connector"></div>
+          <div class="node" data-stage="4"><span>32 units</span><strong>Dense</strong></div>
+          <div class="connector"></div>
+          <div class="node" data-stage="5"><span>2 classes</span><strong>Softmax</strong></div>
+        </div>
+
+        <div class="result" id="result">
+          <div class="result-head">
+            <p class="section-label">MODEL OUTPUT</p>
+            <strong id="classification">Analyzing</strong>
+          </div>
+          <div class="metric">
+            <div><span>No OA</span><b id="normalValue">0.00%</b></div>
+            <div class="track"><i id="normalBar"></i></div>
+          </div>
+          <div class="metric oa">
+            <div><span>Osteoarthritis</span><b id="oaValue">0.00%</b></div>
+            <div class="track"><i id="oaBar"></i></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls-band">
+      <div class="controls">
+        <button id="playButton" type="button">Pause</button>
+        <button id="restartButton" type="button">Restart</button>
+        <label for="speedSelect">Animation speed</label>
+        <select id="speedSelect">
+          <option value="1200">Slow</option>
+          <option value="700" selected>Normal</option>
+          <option value="350">Fast</option>
+        </select>
+      </div>
+      <div class="progress"><i id="progressBar"></i></div>
+    </section>
+
+    <section class="filmstrip-section">
+      <div class="filmstrip-heading">
+        <p class="section-label">TEN IMAGE INFERENCE QUEUE</p>
+        <span>Click an image to inspect its forward pass</span>
+      </div>
+      <div class="filmstrip" id="filmstrip"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

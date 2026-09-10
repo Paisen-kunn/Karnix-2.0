@@ -1,0 +1,15 @@
+{
+  "model": "Karnix custom C++ CNN",
+  "images": [
+    {"file": "no_oa_0002_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0002_grade0.pgm", "normal": 0.605348, "oa": 0.394652, "knownLabel": "No OA"},
+    {"file": "no_oa_0009_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0009_grade0.pgm", "normal": 0.383895, "oa": 0.616105, "knownLabel": "No OA"},
+    {"file": "no_oa_0010_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0010_grade0.pgm", "normal": 0.578197, "oa": 0.421803, "knownLabel": "No OA"},
+    {"file": "no_oa_0012_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0012_grade0.pgm", "normal": 0.551621, "oa": 0.448379, "knownLabel": "No OA"},
+    {"file": "no_oa_0013_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0013_grade0.pgm", "normal": 0.501380, "oa": 0.498620, "knownLabel": "No OA"},
+    {"file": "no_oa_0014_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0014_grade0.pgm", "normal": 0.536531, "oa": 0.463469, "knownLabel": "No OA"},
+    {"file": "no_oa_0017_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0017_grade0.pgm", "normal": 0.252465, "oa": 0.747535, "knownLabel": "No OA"},
+    {"file": "no_oa_0018_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0018_grade0.pgm", "normal": 0.521792, "oa": 0.478208, "knownLabel": "No OA"},
+    {"file": "no_oa_0019_grade0.pgm", "url": "../data/osteoarthritis/screen/no_oa_0019_grade0.pgm", "normal": 0.418791, "oa": 0.581209, "knownLabel": "No OA"},
+    {"file": "oa_0000_grade2.pgm", "url": "../data/osteoarthritis/screen/oa_0000_grade2.pgm", "normal": 0.784114, "oa": 0.215886, "knownLabel": "OA"}
+  ]
+}

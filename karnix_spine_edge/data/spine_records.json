@@ -2218,5 +2218,1705 @@
     "abnormal_prob": 4.7426,
     "classification": "Normal",
     "image_path": "./data/images/test_normal_02.ppm"
+  },
+  {
+    "patient_id": "no_oa_0002_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0002_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0009_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0009_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0010_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0010_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0012_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0012_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0013_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0013_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0014_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0014_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0017_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0017_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0018_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0018_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0019_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0019_grade0.pgm"
+  },
+  {
+    "patient_id": "oa_0000_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0000_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0001_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0001_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0003_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0003_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0004_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0004_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0005_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0005_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0006_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0006_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0007_grade3",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0007_grade3.pgm"
+  },
+  {
+    "patient_id": "oa_0008_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0008_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0011_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0011_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0015_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0015_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0016_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 0.0000,
+    "abnormal_prob": 0.0000,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0016_grade2.pgm"
+  },
+  {
+    "patient_id": "no_oa_0002_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 39.4652,
+    "abnormal_prob": 39.4652,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/no_oa_0002_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0009_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 61.6105,
+    "abnormal_prob": 61.6105,
+    "classification": "Osteoarthritis",
+    "image_path": "data/osteoarthritis/screen/no_oa_0009_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0010_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 42.1803,
+    "abnormal_prob": 42.1803,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/no_oa_0010_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0012_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 44.8379,
+    "abnormal_prob": 44.8379,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/no_oa_0012_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0013_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 49.8620,
+    "abnormal_prob": 49.8620,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/no_oa_0013_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0014_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.3469,
+    "abnormal_prob": 46.3469,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/no_oa_0014_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0017_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 74.7535,
+    "abnormal_prob": 74.7535,
+    "classification": "Osteoarthritis",
+    "image_path": "data/osteoarthritis/screen/no_oa_0017_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0018_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 47.8208,
+    "abnormal_prob": 47.8208,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/no_oa_0018_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0019_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.1209,
+    "abnormal_prob": 58.1209,
+    "classification": "Osteoarthritis",
+    "image_path": "data/osteoarthritis/screen/no_oa_0019_grade0.pgm"
+  },
+  {
+    "patient_id": "oa_0000_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 21.5886,
+    "abnormal_prob": 21.5886,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/oa_0000_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0001_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 67.7416,
+    "abnormal_prob": 67.7416,
+    "classification": "Osteoarthritis",
+    "image_path": "data/osteoarthritis/screen/oa_0001_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0003_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 21.1694,
+    "abnormal_prob": 21.1694,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/oa_0003_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0004_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.7351,
+    "abnormal_prob": 58.7351,
+    "classification": "Osteoarthritis",
+    "image_path": "data/osteoarthritis/screen/oa_0004_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0005_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 16.0205,
+    "abnormal_prob": 16.0205,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/oa_0005_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0006_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 62.9870,
+    "abnormal_prob": 62.9870,
+    "classification": "Osteoarthritis",
+    "image_path": "data/osteoarthritis/screen/oa_0006_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0007_grade3",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 35.7689,
+    "abnormal_prob": 35.7689,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/oa_0007_grade3.pgm"
+  },
+  {
+    "patient_id": "oa_0008_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 71.9847,
+    "abnormal_prob": 71.9847,
+    "classification": "Osteoarthritis",
+    "image_path": "data/osteoarthritis/screen/oa_0008_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0011_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 11.7322,
+    "abnormal_prob": 11.7322,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/oa_0011_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0015_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 40.7294,
+    "abnormal_prob": 40.7294,
+    "classification": "No OA",
+    "image_path": "data/osteoarthritis/screen/oa_0015_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0016_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 80.4484,
+    "abnormal_prob": 80.4484,
+    "classification": "Osteoarthritis",
+    "image_path": "data/osteoarthritis/screen/oa_0016_grade2.pgm"
+  },
+  {
+    "patient_id": "no_oa_0002_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 39.4652,
+    "abnormal_prob": 39.4652,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0002_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0009_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 61.6105,
+    "abnormal_prob": 61.6105,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0009_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0010_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 42.1803,
+    "abnormal_prob": 42.1803,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0010_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0012_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 44.8379,
+    "abnormal_prob": 44.8379,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0012_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0013_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 49.8620,
+    "abnormal_prob": 49.8620,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0013_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0014_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.3469,
+    "abnormal_prob": 46.3469,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0014_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0017_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 74.7535,
+    "abnormal_prob": 74.7535,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0017_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0018_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 47.8208,
+    "abnormal_prob": 47.8208,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0018_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0019_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.1209,
+    "abnormal_prob": 58.1209,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0019_grade0.pgm"
+  },
+  {
+    "patient_id": "oa_0000_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 21.5886,
+    "abnormal_prob": 21.5886,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0000_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0001_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 67.7416,
+    "abnormal_prob": 67.7416,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0001_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0003_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 21.1694,
+    "abnormal_prob": 21.1694,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0003_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0004_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.7351,
+    "abnormal_prob": 58.7351,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0004_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0005_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 16.0205,
+    "abnormal_prob": 16.0205,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0005_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0006_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 62.9870,
+    "abnormal_prob": 62.9870,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0006_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0007_grade3",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 35.7689,
+    "abnormal_prob": 35.7689,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0007_grade3.pgm"
+  },
+  {
+    "patient_id": "oa_0008_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 71.9847,
+    "abnormal_prob": 71.9847,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0008_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0011_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 11.7322,
+    "abnormal_prob": 11.7322,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0011_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0015_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 40.7294,
+    "abnormal_prob": 40.7294,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0015_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0016_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 80.4484,
+    "abnormal_prob": 80.4484,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0016_grade2.pgm"
+  },
+  {
+    "patient_id": "no_oa_0002_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 39.4652,
+    "abnormal_prob": 39.4652,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0002_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0009_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 61.6105,
+    "abnormal_prob": 61.6105,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0009_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0010_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 42.1803,
+    "abnormal_prob": 42.1803,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0010_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0012_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 44.8379,
+    "abnormal_prob": 44.8379,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0012_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0013_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 49.8620,
+    "abnormal_prob": 49.8620,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0013_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0014_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.3469,
+    "abnormal_prob": 46.3469,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0014_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0017_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 74.7535,
+    "abnormal_prob": 74.7535,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0017_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0018_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 47.8208,
+    "abnormal_prob": 47.8208,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0018_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0019_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.1209,
+    "abnormal_prob": 58.1209,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0019_grade0.pgm"
+  },
+  {
+    "patient_id": "oa_0000_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 21.5886,
+    "abnormal_prob": 21.5886,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0000_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0001_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 67.7416,
+    "abnormal_prob": 67.7416,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0001_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0003_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 21.1694,
+    "abnormal_prob": 21.1694,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0003_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0004_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.7351,
+    "abnormal_prob": 58.7351,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0004_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0005_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 16.0205,
+    "abnormal_prob": 16.0205,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0005_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0006_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 62.9870,
+    "abnormal_prob": 62.9870,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0006_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0007_grade3",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 35.7689,
+    "abnormal_prob": 35.7689,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0007_grade3.pgm"
+  },
+  {
+    "patient_id": "oa_0008_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 71.9847,
+    "abnormal_prob": 71.9847,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0008_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0011_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 11.7322,
+    "abnormal_prob": 11.7322,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0011_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0015_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 40.7294,
+    "abnormal_prob": 40.7294,
+    "classification": "No OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0015_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0016_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 80.4484,
+    "abnormal_prob": 80.4484,
+    "classification": "Osteoarthritis",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0016_grade2.pgm"
+  },
+  {
+    "patient_id": "no_oa_0002_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 39.4652,
+    "abnormal_prob": 39.4652,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0002_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0009_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 61.6105,
+    "abnormal_prob": 61.6105,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0009_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0010_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 42.1803,
+    "abnormal_prob": 42.1803,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0010_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0012_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 44.8379,
+    "abnormal_prob": 44.8379,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0012_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0013_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 49.8620,
+    "abnormal_prob": 49.8620,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0013_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0014_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.3469,
+    "abnormal_prob": 46.3469,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0014_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0017_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 74.7535,
+    "abnormal_prob": 74.7535,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0017_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0018_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 47.8208,
+    "abnormal_prob": 47.8208,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0018_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0019_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.1209,
+    "abnormal_prob": 58.1209,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0019_grade0.pgm"
+  },
+  {
+    "patient_id": "oa_0000_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 21.5886,
+    "abnormal_prob": 21.5886,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0000_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0001_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 67.7416,
+    "abnormal_prob": 67.7416,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0001_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0003_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 21.1694,
+    "abnormal_prob": 21.1694,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0003_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0004_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.7351,
+    "abnormal_prob": 58.7351,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0004_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0005_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 16.0205,
+    "abnormal_prob": 16.0205,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0005_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0006_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 62.9870,
+    "abnormal_prob": 62.9870,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0006_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0007_grade3",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 35.7689,
+    "abnormal_prob": 35.7689,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0007_grade3.pgm"
+  },
+  {
+    "patient_id": "oa_0008_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 71.9847,
+    "abnormal_prob": 71.9847,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0008_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0011_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 11.7322,
+    "abnormal_prob": 11.7322,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0011_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0015_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 40.7294,
+    "abnormal_prob": 40.7294,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0015_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0016_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 80.4484,
+    "abnormal_prob": 80.4484,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0016_grade2.pgm"
+  },
+  {
+    "patient_id": "no_stenosis_0000_no_stenosis",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.5368,
+    "abnormal_prob": 46.5368,
+    "classification": "NO_STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/no_stenosis_0000_no_stenosis.pgm"
+  },
+  {
+    "patient_id": "no_stenosis_0001_no_stenosis",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 62.6747,
+    "abnormal_prob": 62.6747,
+    "classification": "STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/no_stenosis_0001_no_stenosis.pgm"
+  },
+  {
+    "patient_id": "no_stenosis_0002_no_stenosis",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 53.7182,
+    "abnormal_prob": 53.7182,
+    "classification": "STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/no_stenosis_0002_no_stenosis.pgm"
+  },
+  {
+    "patient_id": "no_stenosis_0003_no_stenosis",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 85.3879,
+    "abnormal_prob": 85.3879,
+    "classification": "STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/no_stenosis_0003_no_stenosis.pgm"
+  },
+  {
+    "patient_id": "no_stenosis_0008_no_stenosis",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 76.9821,
+    "abnormal_prob": 76.9821,
+    "classification": "STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/no_stenosis_0008_no_stenosis.pgm"
+  },
+  {
+    "patient_id": "stenosis_0004_herniated_disc",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 58.3516,
+    "abnormal_prob": 58.3516,
+    "classification": "STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/stenosis_0004_herniated_disc.pgm"
+  },
+  {
+    "patient_id": "stenosis_0005_herniated_disc",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 45.4216,
+    "abnormal_prob": 45.4216,
+    "classification": "NO_STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/stenosis_0005_herniated_disc.pgm"
+  },
+  {
+    "patient_id": "stenosis_0006_herniated_disc",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 41.6558,
+    "abnormal_prob": 41.6558,
+    "classification": "NO_STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/stenosis_0006_herniated_disc.pgm"
+  },
+  {
+    "patient_id": "stenosis_0007_herniated_disc",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 59.5635,
+    "abnormal_prob": 59.5635,
+    "classification": "STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/stenosis_0007_herniated_disc.pgm"
+  },
+  {
+    "patient_id": "stenosis_0009_herniated_disc",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 1.3851,
+    "abnormal_prob": 1.3851,
+    "classification": "NO_STENOSIS",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/mri/screen/stenosis_0009_herniated_disc.pgm"
+  },
+  {
+    "patient_id": "no_oa_0002_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 72.8207,
+    "abnormal_prob": 72.8207,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0002_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0009_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 52.1659,
+    "abnormal_prob": 52.1659,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0009_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0010_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 42.4428,
+    "abnormal_prob": 42.4428,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0010_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0012_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 41.8151,
+    "abnormal_prob": 41.8151,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0012_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0013_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 39.7635,
+    "abnormal_prob": 39.7635,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0013_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0014_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.3440,
+    "abnormal_prob": 46.3440,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0014_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0017_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 67.4971,
+    "abnormal_prob": 67.4971,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0017_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0018_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.6688,
+    "abnormal_prob": 46.6688,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0018_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0019_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 56.3254,
+    "abnormal_prob": 56.3254,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0019_grade0.pgm"
+  },
+  {
+    "patient_id": "oa_0000_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 63.9642,
+    "abnormal_prob": 63.9642,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0000_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0001_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 61.1957,
+    "abnormal_prob": 61.1957,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0001_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0003_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 83.5664,
+    "abnormal_prob": 83.5664,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0003_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0004_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 59.5731,
+    "abnormal_prob": 59.5731,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0004_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0005_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 17.8109,
+    "abnormal_prob": 17.8109,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0005_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0006_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 56.0698,
+    "abnormal_prob": 56.0698,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0006_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0007_grade3",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 33.3028,
+    "abnormal_prob": 33.3028,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0007_grade3.pgm"
+  },
+  {
+    "patient_id": "oa_0008_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 62.0447,
+    "abnormal_prob": 62.0447,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0008_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0011_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 17.2799,
+    "abnormal_prob": 17.2799,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0011_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0015_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 34.9064,
+    "abnormal_prob": 34.9064,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0015_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0016_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 81.1294,
+    "abnormal_prob": 81.1294,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0016_grade2.pgm"
+  },
+  {
+    "patient_id": "no_oa_0002_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 72.8207,
+    "abnormal_prob": 72.8207,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0002_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0009_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 52.1659,
+    "abnormal_prob": 52.1659,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0009_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0010_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 42.4428,
+    "abnormal_prob": 42.4428,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0010_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0012_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 41.8151,
+    "abnormal_prob": 41.8151,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0012_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0013_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 39.7635,
+    "abnormal_prob": 39.7635,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0013_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0014_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.3440,
+    "abnormal_prob": 46.3440,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0014_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0017_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 67.4971,
+    "abnormal_prob": 67.4971,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0017_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0018_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 46.6688,
+    "abnormal_prob": 46.6688,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0018_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0019_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 56.3254,
+    "abnormal_prob": 56.3254,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0019_grade0.pgm"
+  },
+  {
+    "patient_id": "oa_0000_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 63.9642,
+    "abnormal_prob": 63.9642,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0000_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0001_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 61.1957,
+    "abnormal_prob": 61.1957,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0001_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0003_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 83.5664,
+    "abnormal_prob": 83.5664,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0003_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0004_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 59.5731,
+    "abnormal_prob": 59.5731,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0004_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0005_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 17.8109,
+    "abnormal_prob": 17.8109,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0005_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0006_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 56.0698,
+    "abnormal_prob": 56.0698,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0006_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0007_grade3",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 33.3028,
+    "abnormal_prob": 33.3028,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0007_grade3.pgm"
+  },
+  {
+    "patient_id": "oa_0008_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 62.0447,
+    "abnormal_prob": 62.0447,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0008_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0011_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 17.2799,
+    "abnormal_prob": 17.2799,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0011_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0015_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 34.9064,
+    "abnormal_prob": 34.9064,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0015_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0016_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-09",
+    "risk_score": 81.1294,
+    "abnormal_prob": 81.1294,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0016_grade2.pgm"
+  },
+  {
+    "patient_id": "no_oa_0002_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 72.8207,
+    "abnormal_prob": 72.8207,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0002_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0009_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 52.1659,
+    "abnormal_prob": 52.1659,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0009_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0010_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 42.4428,
+    "abnormal_prob": 42.4428,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0010_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0012_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 41.8151,
+    "abnormal_prob": 41.8151,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0012_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0013_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 39.7635,
+    "abnormal_prob": 39.7635,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0013_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0014_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 46.3440,
+    "abnormal_prob": 46.3440,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0014_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0017_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 67.4971,
+    "abnormal_prob": 67.4971,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0017_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0018_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 46.6688,
+    "abnormal_prob": 46.6688,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0018_grade0.pgm"
+  },
+  {
+    "patient_id": "no_oa_0019_grade0",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 56.3254,
+    "abnormal_prob": 56.3254,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/no_oa_0019_grade0.pgm"
+  },
+  {
+    "patient_id": "oa_0000_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 63.9642,
+    "abnormal_prob": 63.9642,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0000_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0001_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 61.1957,
+    "abnormal_prob": 61.1957,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0001_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0003_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 83.5664,
+    "abnormal_prob": 83.5664,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0003_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0004_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 59.5731,
+    "abnormal_prob": 59.5731,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0004_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0005_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 17.8109,
+    "abnormal_prob": 17.8109,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0005_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0006_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 56.0698,
+    "abnormal_prob": 56.0698,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0006_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0007_grade3",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 33.3028,
+    "abnormal_prob": 33.3028,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0007_grade3.pgm"
+  },
+  {
+    "patient_id": "oa_0008_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 62.0447,
+    "abnormal_prob": 62.0447,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0008_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0011_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 17.2799,
+    "abnormal_prob": 17.2799,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0011_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0015_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 34.9064,
+    "abnormal_prob": 34.9064,
+    "classification": "NO_OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0015_grade2.pgm"
+  },
+  {
+    "patient_id": "oa_0016_grade2",
+    "age": 0,
+    "sex": "N/A",
+    "date": "2026-09-10",
+    "risk_score": 81.1294,
+    "abnormal_prob": 81.1294,
+    "classification": "OA",
+    "image_path": "/Users/sudharsans/Documents/Karniiix/karnix_spine_edge/data/osteoarthritis/screen/oa_0016_grade2.pgm"
   }
 ]

@@ -1,0 +1,4 @@
+id,label,confidence_percent,lat,lon,bbox_x,bbox_y,bbox_w,bbox_h,size_width_m,size_height_m,range_m,image
+det-0000,pipe,57.1,,,37,0,39,240,6.126,37.696,30.0,ship-150.png
+det-0001,pipe,55.6,,,180,552,15,89,2.356,13.979,30.0,ship-150.png
+det-0002,shipwreck,55.1,,,109,451,38,78,5.969,12.251,30.0,ship-150.png

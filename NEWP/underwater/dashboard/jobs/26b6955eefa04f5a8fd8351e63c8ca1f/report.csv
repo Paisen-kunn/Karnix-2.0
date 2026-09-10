@@ -1,0 +1,3 @@
+id,label,confidence_percent,lat,lon,bbox_x,bbox_y,bbox_w,bbox_h,size_width_m,size_height_m,range_m,image
+det-0000,shipwreck,85.9,,,128,0,8,150,2.115,39.648,30.0,WhatsApp Image 2026-09-07 at 18.40.22.jpeg
+det-0001,shipwreck,68.6,,,0,116,24,222,6.344,58.678,30.0,WhatsApp Image 2026-09-07 at 18.40.22.jpeg

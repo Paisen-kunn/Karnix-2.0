@@ -43,6 +43,38 @@ Once trained, select `ml_predictor` as the scheduler in the dashboard (or via
 `compare_schedulers.py`) to use it. Without a trained model, `ml_predictor` falls
 back to random exploration.
 
+## Training on the real dataset from the problem statement
+
+The SIH problem statement references the Alan Turing Institute's real radar
+emitter dataset ("Turing Synthetic Radar Dataset", TSRD):
+https://huggingface.co/datasets/alan-turing-institute/turing-synthetic-radar-dataset
+
+It's ~70GB and **gated** (you must accept its terms while logged in to Hugging
+Face before any download, including with a token, will work):
+
+```bash
+# One-time, in a browser:
+#   1. Log in at https://huggingface.co
+#   2. Open the dataset page above and click "Agree and access repository"
+#   3. Create a read token at https://huggingface.co/settings/tokens
+
+cd backend
+huggingface-cli login              # paste the token, or: export HF_TOKEN=hf_xxx
+
+python3 download_hf_radar_dataset.py --split val_scan --num-files 5
+python3 convert_hf_radar_dataset.py            # -> data/training_data_hf.csv
+python3 train_model.py --data data/training_data.csv data/training_data_hf.csv
+```
+
+`download_hf_radar_dataset.py` only pulls a handful of pulse-train files from the
+"scan" split (matching this project's scanning-receiver scenario) instead of the
+full dataset. `convert_hf_radar_dataset.py` auto-detects the Time-of-Arrival /
+frequency fields in each file, buckets pulses into a band/time occupancy grid,
+and replays a round-robin scan over it to produce rows in the exact schema as
+the synthetic dataset -- so real and synthetic data train the same model
+together. If field auto-detection fails, run with `--inspect` to print each
+file's HDF5 structure and adjust `FIELD_ALIASES` in that script.
+
 ## Run the backend
 
 ```bash

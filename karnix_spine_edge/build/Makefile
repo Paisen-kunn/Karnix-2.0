@@ -129,6 +129,56 @@ spine_cli/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/spine_cli.dir/build.make CMakeFiles/spine_cli.dir/build
 .PHONY : spine_cli/fast
 
+#=============================================================================
+# Target rules for targets named mura_pipeline
+
+# Build rule for target.
+mura_pipeline: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mura_pipeline
+.PHONY : mura_pipeline
+
+# fast build rule for target.
+mura_pipeline/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mura_pipeline.dir/build.make CMakeFiles/mura_pipeline.dir/build
+.PHONY : mura_pipeline/fast
+
+#=============================================================================
+# Target rules for targets named cnn_visualizer
+
+# Build rule for target.
+cnn_visualizer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cnn_visualizer
+.PHONY : cnn_visualizer
+
+# fast build rule for target.
+cnn_visualizer/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cnn_visualizer.dir/build.make CMakeFiles/cnn_visualizer.dir/build
+.PHONY : cnn_visualizer/fast
+
+cnn_visualizer.o: cnn_visualizer.c++.o
+.PHONY : cnn_visualizer.o
+
+# target to build an object file
+cnn_visualizer.c++.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cnn_visualizer.dir/build.make CMakeFiles/cnn_visualizer.dir/cnn_visualizer.c++.o
+.PHONY : cnn_visualizer.c++.o
+
+cnn_visualizer.i: cnn_visualizer.c++.i
+.PHONY : cnn_visualizer.i
+
+# target to preprocess a source file
+cnn_visualizer.c++.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cnn_visualizer.dir/build.make CMakeFiles/cnn_visualizer.dir/cnn_visualizer.c++.i
+.PHONY : cnn_visualizer.c++.i
+
+cnn_visualizer.s: cnn_visualizer.c++.s
+.PHONY : cnn_visualizer.s
+
+# target to generate assembly for a file
+cnn_visualizer.c++.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cnn_visualizer.dir/build.make CMakeFiles/cnn_visualizer.dir/cnn_visualizer.c++.s
+.PHONY : cnn_visualizer.c++.s
+
 medical/SpineEvaluationUtils.o: medical/SpineEvaluationUtils.cpp.o
 .PHONY : medical/SpineEvaluationUtils.o
 
@@ -152,6 +202,30 @@ medical/SpineEvaluationUtils.s: medical/SpineEvaluationUtils.cpp.s
 medical/SpineEvaluationUtils.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/spine_cli.dir/build.make CMakeFiles/spine_cli.dir/medical/SpineEvaluationUtils.cpp.s
 .PHONY : medical/SpineEvaluationUtils.cpp.s
+
+mura_pipeline.o: mura_pipeline.c++.o
+.PHONY : mura_pipeline.o
+
+# target to build an object file
+mura_pipeline.c++.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mura_pipeline.dir/build.make CMakeFiles/mura_pipeline.dir/mura_pipeline.c++.o
+.PHONY : mura_pipeline.c++.o
+
+mura_pipeline.i: mura_pipeline.c++.i
+.PHONY : mura_pipeline.i
+
+# target to preprocess a source file
+mura_pipeline.c++.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mura_pipeline.dir/build.make CMakeFiles/mura_pipeline.dir/mura_pipeline.c++.i
+.PHONY : mura_pipeline.c++.i
+
+mura_pipeline.s: mura_pipeline.c++.s
+.PHONY : mura_pipeline.s
+
+# target to generate assembly for a file
+mura_pipeline.c++.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mura_pipeline.dir/build.make CMakeFiles/mura_pipeline.dir/mura_pipeline.c++.s
+.PHONY : mura_pipeline.c++.s
 
 spine_cli.o: spine_cli.c++.o
 .PHONY : spine_cli.o
@@ -185,10 +259,18 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... cnn_visualizer"
+	@echo "... mura_pipeline"
 	@echo "... spine_cli"
+	@echo "... cnn_visualizer.o"
+	@echo "... cnn_visualizer.i"
+	@echo "... cnn_visualizer.s"
 	@echo "... medical/SpineEvaluationUtils.o"
 	@echo "... medical/SpineEvaluationUtils.i"
 	@echo "... medical/SpineEvaluationUtils.s"
+	@echo "... mura_pipeline.o"
+	@echo "... mura_pipeline.i"
+	@echo "... mura_pipeline.s"
 	@echo "... spine_cli.o"
 	@echo "... spine_cli.i"
 	@echo "... spine_cli.s"

@@ -1,14 +1,19 @@
 """Train the band-activity classifier used by MLPredictorScheduler.
 
-Reads data/training_data.csv (see generate_training_data.py) and fits a
-RandomForest classifier that predicts, from a band's own past-scan
-features, the probability the band is transmitting right now. Saves the
-fitted model to models/band_activity_model.joblib.
+Reads one or more training CSVs -- data/training_data.csv from
+generate_training_data.py (synthetic) and/or data/training_data_hf.csv from
+convert_hf_radar_dataset.py (real Turing Synthetic Radar Dataset pulses) --
+and fits a RandomForest classifier that predicts, from a band's own
+past-scan features, the probability the band is transmitting right now.
+Saves the fitted model to models/band_activity_model.joblib.
 
 Usage:
-    python3 generate_training_data.py   # once, to (re)build the dataset
+    python3 generate_training_data.py                 # once, to (re)build the synthetic dataset
     python3 train_model.py
+    # or, combined with real HF radar data:
+    python3 train_model.py --data data/training_data.csv data/training_data_hf.csv
 """
+import argparse
 import csv
 import os
 
@@ -25,21 +30,30 @@ DATA_PATH = os.path.join(HERE, "data", "training_data.csv")
 MODEL_PATH = os.path.join(HERE, "models", "band_activity_model.joblib")
 
 
-def load_dataset(path: str):
+def load_dataset(paths) -> tuple:
+    if isinstance(paths, str):
+        paths = [paths]
     X, y = [], []
-    with open(path, newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            X.append([float(row[name]) for name in FEATURE_NAMES])
-            y.append(int(row["label"]))
+    for path in paths:
+        with open(path, newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                X.append([float(row[name]) for name in FEATURE_NAMES])
+                y.append(int(row["label"]))
     return np.array(X, dtype=float), np.array(y, dtype=int)
 
 
-def train(data_path: str = DATA_PATH, model_path: str = MODEL_PATH) -> None:
-    if not os.path.exists(data_path):
-        raise SystemExit(f"No training data at {data_path} -- run generate_training_data.py first.")
+def train(data_path=DATA_PATH, model_path: str = MODEL_PATH) -> None:
+    paths = [data_path] if isinstance(data_path, str) else list(data_path)
+    missing = [p for p in paths if not os.path.exists(p)]
+    if missing:
+        raise SystemExit(
+            f"Missing training data file(s): {missing} -- run generate_training_data.py "
+            "and/or convert_hf_radar_dataset.py first."
+        )
 
-    X, y = load_dataset(data_path)
+    X, y = load_dataset(paths)
+    print(f"Loaded {len(X)} rows from: {', '.join(paths)}")
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
@@ -66,4 +80,8 @@ def train(data_path: str = DATA_PATH, model_path: str = MODEL_PATH) -> None:
 
 
 if __name__ == "__main__":
-    train()
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--data", nargs="+", default=[DATA_PATH], help="One or more training CSVs to concatenate.")
+    parser.add_argument("--model-path", default=MODEL_PATH)
+    args = parser.parse_args()
+    train(data_path=args.data, model_path=args.model_path)

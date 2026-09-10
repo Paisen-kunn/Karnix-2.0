@@ -17,12 +17,48 @@ add_executable(spine_cli
     medical/SpineEvaluationUtils.cpp
 )
 
+add_executable(mura_pipeline
+    mura_pipeline.c++
+)
+
 # ── Compiler flags ────────────────────────────────────────────────────────────
 target_compile_options(spine_cli PRIVATE
     -Wall
     -Wextra
     -O2
 )
+
+target_compile_options(mura_pipeline PRIVATE
+    -Wall
+    -Wextra
+    -O2
+)
+
+if(APPLE)
+    file(GLOB SDL2_CELLAR_DIRS "/opt/homebrew/Cellar/sdl2/*")
+    file(GLOB SDL2_TTF_CELLAR_DIRS "/opt/homebrew/Cellar/sdl2_ttf/*")
+    list(SORT SDL2_CELLAR_DIRS)
+    list(SORT SDL2_TTF_CELLAR_DIRS)
+    list(REVERSE SDL2_CELLAR_DIRS)
+    list(REVERSE SDL2_TTF_CELLAR_DIRS)
+    if(SDL2_CELLAR_DIRS AND SDL2_TTF_CELLAR_DIRS)
+        list(GET SDL2_CELLAR_DIRS 0 SDL2_ROOT)
+        list(GET SDL2_TTF_CELLAR_DIRS 0 SDL2_TTF_ROOT)
+
+        add_executable(cnn_visualizer cnn_visualizer.c++)
+        target_include_directories(cnn_visualizer PRIVATE
+            "${SDL2_ROOT}/include/SDL2"
+            "${SDL2_TTF_ROOT}/include/SDL2"
+        )
+        target_link_libraries(cnn_visualizer PRIVATE
+            "${SDL2_ROOT}/lib/libSDL2.dylib"
+            "${SDL2_TTF_ROOT}/lib/libSDL2_ttf.dylib"
+        )
+        target_compile_options(cnn_visualizer PRIVATE -Wall -Wextra -O2)
+    else()
+        message(WARNING "SDL2/SDL2_ttf not found; cnn_visualizer target disabled")
+    endif()
+endif()
 
 # Print offline reminder
 message(STATUS "==================================================")

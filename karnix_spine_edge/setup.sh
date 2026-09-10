@@ -1,219 +1,267 @@
-#!/bin/bash
-# =============================================================================
-#  Karnix Spine Edge – setup.sh
-#  One-shot build + end-to-end test runner
-#
-#  What this script does:
-#    1.  Verifies prerequisites  (clang++, sips, python3)
-#    2.  Creates required directories  (data/images/, models/)
-#    3.  Generates synthetic grayscale test images via python3
-#         normal_test.pgm   – bright region (simulates healthy tissue)
-#         abnormal_test.pgm – dark region   (simulates anomalous tissue)
-#    4.  Compiles spine_cli.c++ with clang++ -std=gnu++14
-#    5.  Runs ./spine_cli end-to-end
-#    6.  Prints a pass/fail summary
-#
-#  Usage:
-#    chmod +x setup.sh
-#    ./setup.sh
-#
-#  To keep generated test images after the run (default: they are removed):
-#    KEEP_TEST_IMAGES=1 ./setup.sh
-# =============================================================================
+#!/usr/bin/env bash
 
 set -euo pipefail
 
-# ── Colours ───────────────────────────────────────────────────────────────────
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-RESET='\033[0m'
-
-pass() { echo -e "${GREEN}[PASS]${RESET} $1"; }
-fail() { echo -e "${RED}[FAIL]${RESET} $1"; }
-info() { echo -e "${CYAN}[INFO]${RESET} $1"; }
-warn() { echo -e "${YELLOW}[WARN]${RESET} $1"; }
-step() { echo -e "\n${BOLD}── $1${RESET}"; }
-
-KEEP_TEST_IMAGES="${KEEP_TEST_IMAGES:-0}"
-ERRORS=0
-
-# ── Resolve script directory so the script works from any working directory ───
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+DATASET_URL="https://www.kaggle.com/api/v1/datasets/download/shashwatwork/knee-osteoarthritis-dataset-with-severity"
+MRI_DATASET_URL="https://www.kaggle.com/api/v1/datasets/download/abdullahkhan70/lumbar-spinal-mri-dataset"
+CACHE_DIR="$SCRIPT_DIR/data/cache"
+ARCHIVE="$CACHE_DIR/knee_osteoarthritis.zip"
+MRI_ARCHIVE="$CACHE_DIR/lumbar_mri.zip"
+OA_DIR="$SCRIPT_DIR/data/osteoarthritis"
+MRI_DIR="$SCRIPT_DIR/data/mri"
+MODEL="$SCRIPT_DIR/models/osteoarthritis_cnn.weights"
+MRI_MODEL="$SCRIPT_DIR/models/lumbar_mri_cnn.weights"
+IMAGE_COUNT="${IMAGE_COUNT:-600}"
+MRI_IMAGE_COUNT="${MRI_IMAGE_COUNT:-600}"
+EPOCHS="${EPOCHS:-3}"
+MRI_EPOCHS="${MRI_EPOCHS:-3}"
+BATCH_SIZE="${BATCH_SIZE:-16}"
+DEXA_SOURCE="${DEXA_SOURCE:-}"
+DEXA_SOURCE_NAME="${DEXA_SOURCE_NAME:-}"
+DEXA_SOURCE_URL="${DEXA_SOURCE_URL:-}"
+DEXA_LICENSE="${DEXA_LICENSE:-}"
+DEXA_IMAGE_COUNT="${DEXA_IMAGE_COUNT:-600}"
+DEXA_DIR="$SCRIPT_DIR/data/dexa"
+DEXA_MODEL="$SCRIPT_DIR/models/dexa_cnn.weights"
+LAUNCH_OS=0
+FORCE_DATA=0
+RUN_VISUALIZER=1
+RUN_STARTED=$(date +%s)
+TRAIN_LOG="$SCRIPT_DIR/models/oa_training_full.log"
+TEST_LOG="$SCRIPT_DIR/models/oa_evaluation_full.log"
+MRI_TRAIN_LOG="$SCRIPT_DIR/models/mri_training_full.log"
+MRI_TEST_LOG="$SCRIPT_DIR/models/mri_evaluation_full.log"
+DEXA_TRAIN_LOG="$SCRIPT_DIR/models/dexa_training_full.log"
+DEXA_TEST_LOG="$SCRIPT_DIR/models/dexa_evaluation_full.log"
+
+for argument in "$@"; do
+    case "$argument" in
+        --launch-os) LAUNCH_OS=1 ;;
+        --force-data) FORCE_DATA=1 ;;
+        --no-visualizer) RUN_VISUALIZER=0 ;;
+        --help)
+            printf 'Usage: ./setup.sh [--force-data] [--no-visualizer] [--launch-os]\n'
+            printf 'Environment: IMAGE_COUNT=600 EPOCHS=3 MRI_IMAGE_COUNT=600 MRI_EPOCHS=3 BATCH_SIZE=16\n'
+            printf 'Optional genuine DEXA: DEXA_SOURCE=/path DEXA_SOURCE_NAME=... DEXA_SOURCE_URL=... DEXA_LICENSE=...\n'
+            exit 0
+            ;;
+        *) printf 'Unknown option: %s\n' "$argument" >&2; exit 2 ;;
+    esac
+done
+
+step() { printf '\n\033[1;36m[%s]\033[0m %s\n' "$1" "$2"; }
+pass() { printf '\033[1;32m[PASS]\033[0m %s\n' "$1"; }
+fail() { printf '\033[1;31m[FAIL]\033[0m %s\n' "$1" >&2; exit 1; }
+
 cd "$SCRIPT_DIR"
-info "Working directory: $SCRIPT_DIR"
 
-# =============================================================================
-#  STEP 1 – Prerequisite check
-# =============================================================================
-step "Step 1: Checking prerequisites"
+step "1/13" "Checking prerequisites"
+for command_name in python3 curl cmake clang++; do
+    command -v "$command_name" >/dev/null 2>&1 || fail "$command_name is required"
+    pass "$command_name: $(command -v "$command_name")"
+done
 
-check_tool() {
-    local tool="$1"
-    local install_hint="$2"
-    if command -v "$tool" &>/dev/null; then
-        pass "$tool found: $(command -v "$tool")"
-    else
-        fail "$tool not found.  $install_hint"
-        ERRORS=$((ERRORS + 1))
+if [[ "$(uname)" == "Darwin" ]]; then
+    command -v brew >/dev/null 2>&1 || fail "Homebrew is required for the native SDL2 animation"
+    if ! brew list --versions sdl2 >/dev/null 2>&1 ||
+       ! brew list --versions sdl2_ttf >/dev/null 2>&1; then
+        step "1/13" "Installing SDL2 native graphics dependencies"
+        brew install sdl2 sdl2_ttf
     fi
-}
-
-check_tool clang++ "Install Xcode Command Line Tools: xcode-select --install"
-check_tool sips    "sips ships with every macOS. If missing, reinstall macOS."
-check_tool python3 "Install Python 3: brew install python3"
-
-if [[ $ERRORS -gt 0 ]]; then
-    echo -e "\n${RED}Prerequisite check failed. Fix the above errors and re-run.${RESET}"
-    exit 1
+    pass "SDL2 and SDL2_ttf are installed"
 fi
 
-# Show clang++ version
-info "Compiler: $(clang++ --version 2>&1 | head -1)"
+step "2/13" "Creating isolated Python environment"
+if [[ ! -x "$SCRIPT_DIR/.venv/bin/python3" ]]; then
+    python3 -m venv "$SCRIPT_DIR/.venv"
+fi
+"$SCRIPT_DIR/.venv/bin/python3" -m pip install --quiet --upgrade pip
+"$SCRIPT_DIR/.venv/bin/python3" -m pip install --quiet 'Pillow>=10,<13'
+pass "Python environment ready"
 
-# =============================================================================
-#  STEP 2 – Create required directories
-# =============================================================================
-step "Step 2: Creating directories"
+step "3/13" "Downloading CC BY 4.0 knee osteoarthritis dataset"
+mkdir -p "$CACHE_DIR" "$SCRIPT_DIR/models"
+if [[ ! -s "$ARCHIVE" || "$FORCE_DATA" -eq 1 ]]; then
+    temporary_archive="$ARCHIVE.part"
+    rm -f "$temporary_archive"
+    curl --fail --location --retry 3 --progress-bar "$DATASET_URL" --output "$temporary_archive"
+    mv "$temporary_archive" "$ARCHIVE"
+fi
+"$SCRIPT_DIR/.venv/bin/python3" -c 'import sys, zipfile; sys.exit(0 if zipfile.is_zipfile(sys.argv[1]) else 1)' "$ARCHIVE" \
+    || fail "Downloaded dataset is not a valid ZIP archive"
+pass "Dataset archive: $ARCHIVE"
 
-mkdir -p data/images
-mkdir -p models
-pass "data/images/  created (or already exists)"
-pass "models/       created (or already exists)"
+step "4/13" "Downloading CC0 lumbar MRI dataset"
+if [[ ! -s "$MRI_ARCHIVE" || "$FORCE_DATA" -eq 1 ]]; then
+    temporary_mri_archive="$MRI_ARCHIVE.part"
+    rm -f "$temporary_mri_archive"
+    curl --fail --location --retry 3 --progress-bar "$MRI_DATASET_URL" \
+        --output "$temporary_mri_archive"
+    mv "$temporary_mri_archive" "$MRI_ARCHIVE"
+fi
+"$SCRIPT_DIR/.venv/bin/python3" -c 'import sys, zipfile; sys.exit(0 if zipfile.is_zipfile(sys.argv[1]) else 1)' "$MRI_ARCHIVE" \
+    || fail "Downloaded MRI dataset is not a valid ZIP archive"
+pass "MRI archive: $MRI_ARCHIVE"
 
-# =============================================================================
-#  STEP 3 – Generate synthetic test images
-# =============================================================================
-step "Step 3: Generating synthetic test images"
+step "5/13" "Preparing balanced OA dataset"
+if [[ ! -f "$OA_DIR/train.csv" || ! -f "$OA_DIR/test.csv" || "$FORCE_DATA" -eq 1 ]]; then
+    "$SCRIPT_DIR/.venv/bin/python3" "$SCRIPT_DIR/prepare_oa_dataset.py" \
+        --archive "$ARCHIVE" --output "$OA_DIR" --count "$IMAGE_COUNT"
+fi
+train_rows=$(($(wc -l < "$OA_DIR/train.csv") - 1))
+test_rows=$(($(wc -l < "$OA_DIR/test.csv") - 1))
+[[ $((train_rows + test_rows)) -eq "$IMAGE_COUNT" ]] \
+    || fail "Expected $IMAGE_COUNT prepared images, found $((train_rows + test_rows))"
+pass "Prepared $train_rows training and $test_rows held-out test images"
 
-python3 - <<'PYEOF'
-import struct, random, os
+step "6/13" "Preparing balanced lumbar MRI dataset"
+if [[ ! -f "$MRI_DIR/train.csv" || ! -f "$MRI_DIR/test.csv" ||
+    ! -f "$MRI_DIR/screen.csv" || "$FORCE_DATA" -eq 1 ]]; then
+    "$SCRIPT_DIR/.venv/bin/python3" "$SCRIPT_DIR/prepare_mri_dataset.py" \
+        --archive "$MRI_ARCHIVE" --output "$MRI_DIR" --count "$MRI_IMAGE_COUNT"
+fi
+mri_train_rows=$(($(wc -l < "$MRI_DIR/train.csv") - 1))
+mri_test_rows=$(($(wc -l < "$MRI_DIR/test.csv") - 1))
+[[ $((mri_train_rows + mri_test_rows)) -eq "$MRI_IMAGE_COUNT" ]] \
+    || fail "Expected $MRI_IMAGE_COUNT MRI images, found $((mri_train_rows + mri_test_rows))"
+pass "Prepared $mri_train_rows MRI training and $mri_test_rows MRI test images"
 
-random.seed(42)
+step "7/13" "Building the C++ CNN and native animation"
+build_started=$(date +%s)
+cmake -S "$SCRIPT_DIR" -B "$SCRIPT_DIR/build"
+cmake --build "$SCRIPT_DIR/build" --config Release
+[[ -x "$SCRIPT_DIR/build/spine_cli" ]] || fail "spine_cli was not built"
+[[ -x "$SCRIPT_DIR/build/cnn_visualizer" ]] || fail "cnn_visualizer was not built"
+pass "Built spine_cli and cnn_visualizer in $(( $(date +%s) - build_started )) seconds"
 
-def make_pgm(path, base_value, size=64, noise=20):
-    """Write a binary PGM (P5) grayscale image."""
-    with open(path, 'wb') as f:
-        header = f"P5\n{size} {size}\n255\n"
-        f.write(header.encode('ascii'))
-        for _ in range(size * size):
-            v = base_value + random.randint(-noise, noise)
-            v = max(0, min(255, v))
-            f.write(struct.pack('B', v))
+step "8/13" "Training OA CNN with per-image terminal telemetry"
+rm -f "$MODEL"
+rm -rf "$SCRIPT_DIR/models/checkpoints/oa"
+mkdir -p "$SCRIPT_DIR/models/checkpoints/oa"
+train_started=$(date +%s)
+"$SCRIPT_DIR/build/spine_cli" --train "$OA_DIR/train.csv" "$EPOCHS" \
+    --batch-size "$BATCH_SIZE" --checkpoint-dir "$SCRIPT_DIR/models/checkpoints/oa" --verbose \
+    | tee "$TRAIN_LOG"
+train_duration=$(( $(date +%s) - train_started ))
+[[ -s "$MODEL" ]] || fail "Training did not create $MODEL"
+[[ -s "$SCRIPT_DIR/models/checkpoints/oa/epoch_${EPOCHS}.weights" ]] \
+    || fail "Final OA epoch checkpoint is missing"
+pass "Model saved: $MODEL"
+pass "Training wall-clock duration: ${train_duration} seconds"
+pass "Complete training log: $TRAIN_LOG"
 
-# normal_test  – higher brightness (bright tissue pattern)
-make_pgm("data/images/normal_test.pgm",   base_value=200, size=64)
+step "9/13" "Testing every held-out OA image with detailed telemetry"
+test_started=$(date +%s)
+"$SCRIPT_DIR/build/spine_cli" --evaluate "$OA_DIR/test.csv" --verbose \
+    | tee "$TEST_LOG"
+test_duration=$(( $(date +%s) - test_started ))
+pass "Testing wall-clock duration: ${test_duration} seconds"
+pass "Complete test log: $TEST_LOG"
 
-# abnormal_test – lower brightness (darker anomalous region)
-make_pgm("data/images/abnormal_test.pgm", base_value=55,  size=64)
+step "10/13" "Training lumbar MRI CNN with per-image telemetry"
+rm -f "$MRI_MODEL"
+rm -rf "$SCRIPT_DIR/models/checkpoints/mri"
+mkdir -p "$SCRIPT_DIR/models/checkpoints/mri"
+mri_train_started=$(date +%s)
+"$SCRIPT_DIR/build/spine_cli" --train "$MRI_DIR/train.csv" "$MRI_EPOCHS" \
+    --model "$MRI_MODEL" --task LUMBAR_MRI --negative NO_STENOSIS \
+    --positive STENOSIS --batch-size "$BATCH_SIZE" \
+    --checkpoint-dir "$SCRIPT_DIR/models/checkpoints/mri" --verbose | tee "$MRI_TRAIN_LOG"
+mri_train_duration=$(( $(date +%s) - mri_train_started ))
+[[ -s "$MRI_MODEL" ]] || fail "MRI training did not create $MRI_MODEL"
+[[ -s "$SCRIPT_DIR/models/checkpoints/mri/epoch_${MRI_EPOCHS}.weights" ]] \
+    || fail "Final MRI epoch checkpoint is missing"
+pass "MRI model saved: $MRI_MODEL"
 
-print("[PASS] normal_test.pgm   created  (64×64, bright)")
-print("[PASS] abnormal_test.pgm created  (64×64, dark)")
-PYEOF
+step "11/13" "Testing every held-out lumbar MRI image"
+mri_test_started=$(date +%s)
+"$SCRIPT_DIR/build/spine_cli" --evaluate "$MRI_DIR/test.csv" \
+    --model "$MRI_MODEL" --task LUMBAR_MRI --negative NO_STENOSIS \
+    --positive STENOSIS --verbose | tee "$MRI_TEST_LOG"
+mri_test_duration=$(( $(date +%s) - mri_test_started ))
+pass "MRI testing wall-clock duration: ${mri_test_duration} seconds"
 
-# =============================================================================
-#  STEP 4 – Compile
-# =============================================================================
-step "Step 4: Compiling spine_cli.c++"
-
-info "Command: clang++ -std=gnu++14 spine_cli.c++ -o spine_cli"
-
-# Capture warnings but do not fail on them
-COMPILE_OUTPUT=$(clang++ -std=gnu++14 spine_cli.c++ -o spine_cli 2>&1) || {
-    fail "Compilation failed."
-    echo "$COMPILE_OUTPUT"
-    ERRORS=$((ERRORS + 1))
-}
-
-if [[ $ERRORS -eq 0 ]]; then
-    pass "Compilation succeeded → ./spine_cli"
-    # Print pre-existing Karnix core warnings as informational only
-    if [[ -n "$COMPILE_OUTPUT" ]]; then
-        warn "Pre-existing Karnix core warnings (non-fatal):"
-        echo "$COMPILE_OUTPUT" | sed 's/^/        /'
-    fi
+if [[ -n "$DEXA_SOURCE" ]]; then
+    [[ -n "$DEXA_SOURCE_NAME" && -n "$DEXA_SOURCE_URL" && -n "$DEXA_LICENSE" ]] \
+        || fail "DEXA_SOURCE_NAME, DEXA_SOURCE_URL, and DEXA_LICENSE are required with DEXA_SOURCE"
+    step "DEXA" "Preparing genuine labeled DEXA scans"
+    "$SCRIPT_DIR/.venv/bin/python3" "$SCRIPT_DIR/prepare_dexa_dataset.py" \
+        --source "$DEXA_SOURCE" --output "$DEXA_DIR" --count "$DEXA_IMAGE_COUNT" \
+        --source-name "$DEXA_SOURCE_NAME" --source-url "$DEXA_SOURCE_URL" \
+        --license "$DEXA_LICENSE"
+    rm -f "$DEXA_MODEL"
+    rm -rf "$SCRIPT_DIR/models/checkpoints/dexa"
+    mkdir -p "$SCRIPT_DIR/models/checkpoints/dexa"
+    "$SCRIPT_DIR/build/spine_cli" --train "$DEXA_DIR/train.csv" "$EPOCHS" \
+        --model "$DEXA_MODEL" --task DEXA_BMD --negative NORMAL_BMD \
+        --positive OSTEOPOROSIS --batch-size "$BATCH_SIZE" \
+        --checkpoint-dir "$SCRIPT_DIR/models/checkpoints/dexa" --verbose | tee "$DEXA_TRAIN_LOG"
+    [[ -s "$SCRIPT_DIR/models/checkpoints/dexa/epoch_${EPOCHS}.weights" ]] \
+        || fail "Final DEXA epoch checkpoint is missing"
+    "$SCRIPT_DIR/build/spine_cli" --evaluate "$DEXA_DIR/test.csv" \
+        --model "$DEXA_MODEL" --task DEXA_BMD --negative NORMAL_BMD \
+        --positive OSTEOPOROSIS --verbose | tee "$DEXA_TEST_LOG"
 else
-    echo -e "\n${RED}Build failed. Aborting.${RESET}"
-    exit 1
+    printf '\033[1;33m[DEXA NOTICE]\033[0m No verified open labeled DEXA image archive was found.\n'
+    printf 'Set DEXA_SOURCE and source/license metadata to train only on genuine DXA exports.\n'
 fi
 
-# =============================================================================
-#  STEP 5 – Run end-to-end
-# =============================================================================
-step "Step 5: Running ./spine_cli (end-to-end test)"
+step "12/13" "Screening OA and MRI demonstration images"
+"$SCRIPT_DIR/build/spine_cli" --screen "$OA_DIR/screen" | tee "$SCRIPT_DIR/models/oa_screening.txt"
+"$SCRIPT_DIR/build/spine_cli" --evaluate "$MRI_DIR/screen.csv" \
+    --model "$MRI_MODEL" --task LUMBAR_MRI --negative NO_STENOSIS \
+    --positive STENOSIS | tee "$SCRIPT_DIR/models/mri_screening.txt"
+pass "Evaluation and screening completed"
 
-echo ""
-echo "──────────────────────────────────────────────────────────────────"
-./spine_cli
-EXIT_CODE=$?
-echo "──────────────────────────────────────────────────────────────────"
-echo ""
-
-if [[ $EXIT_CODE -eq 0 ]]; then
-    pass "spine_cli exited with code 0"
+step "13/13" "Building KarnixOS host application"
+if command -v gcc >/dev/null 2>&1 && make -C "$ROOT_DIR" -f os/Makefile; then
+    pass "KarnixOS built at $ROOT_DIR/KarnixOS"
 else
-    fail "spine_cli exited with code $EXIT_CODE"
-    ERRORS=$((ERRORS + 1))
+    printf '\033[1;33m[WARN]\033[0m KarnixOS host build skipped; gcc and ncurses are required\n'
 fi
 
-# =============================================================================
-#  STEP 6 – Verify outputs
-# =============================================================================
-step "Step 6: Verifying outputs"
+total_duration=$(( $(date +%s) - RUN_STARTED ))
+model_train_seconds=$(awk '/TRAINING DURATION:/ {print $3}' "$TRAIN_LOG")
+model_test_seconds=$(awk '/TEST DURATION:/ {print $3}' "$TEST_LOG")
+mri_train_seconds=$(awk '/TRAINING DURATION:/ {print $3}' "$MRI_TRAIN_LOG")
+mri_test_seconds=$(awk '/TEST DURATION:/ {print $3}' "$MRI_TEST_LOG")
+printf '\n\033[1;32mFULL PIPELINE COMPLETE\033[0m\n'
+printf 'Training duration: %s seconds (shell wall clock: %d seconds)\n' \
+    "$model_train_seconds" "$train_duration"
+printf 'Testing duration:  %s seconds (shell wall clock: %d seconds)\n' \
+    "$model_test_seconds" "$test_duration"
+printf 'MRI training:      %s seconds (shell wall clock: %d seconds)\n' \
+    "$mri_train_seconds" "$mri_train_duration"
+printf 'MRI testing:       %s seconds (shell wall clock: %d seconds)\n' \
+    "$mri_test_seconds" "$mri_test_duration"
+printf 'Total setup time:  %d seconds (%d min %d sec)\n' \
+    "$total_duration" "$((total_duration / 60))" "$((total_duration % 60))"
+printf 'Training log:      %s\n' "$TRAIN_LOG"
+printf 'Testing log:       %s\n\n' "$TEST_LOG"
+printf 'MRI training log:  %s\n' "$MRI_TRAIN_LOG"
+printf 'MRI testing log:   %s\n\n' "$MRI_TEST_LOG"
+printf 'Train again:  cd %s && ./build/spine_cli --train data/osteoarthritis/train.csv %s --batch-size %s --checkpoint-dir models/checkpoints/oa --verbose\n' "$SCRIPT_DIR" "$EPOCHS" "$BATCH_SIZE"
+printf 'Evaluate:     ./build/spine_cli --evaluate data/osteoarthritis/test.csv --verbose\n'
+printf 'Screen:       ./build/spine_cli --screen data/osteoarthritis/screen\n'
+printf 'Native CNN:   ./build/cnn_visualizer data/osteoarthritis/screen models/osteoarthritis_cnn.weights\n'
+printf 'MRI CNN:      ./build/cnn_visualizer data/mri/screen models/lumbar_mri_cnn.weights LUMBAR_MRI NO_STENOSIS STENOSIS\n'
+printf 'Run KarnixOS: cd %s && ./KarnixOS\n' "$ROOT_DIR"
 
-# Weights file
-if [[ -f "models/spine_model.weights" ]]; then
-    WEIGHTS_SIZE=$(wc -c < "models/spine_model.weights" | tr -d ' ')
-    pass "models/spine_model.weights  exists  (${WEIGHTS_SIZE} bytes)"
-else
-    fail "models/spine_model.weights  NOT found"
-    ERRORS=$((ERRORS + 1))
+if [[ "$RUN_VISUALIZER" -eq 1 ]]; then
+    printf '\nLaunching native C++ CNN animation...\n'
+    "$SCRIPT_DIR/build/cnn_visualizer" "$OA_DIR/screen" "$MODEL" \
+        >"$SCRIPT_DIR/models/cnn_visualizer.log" 2>&1 &
+    visualizer_pid=$!
+    "$SCRIPT_DIR/build/cnn_visualizer" "$MRI_DIR/screen" "$MRI_MODEL" \
+        LUMBAR_MRI NO_STENOSIS STENOSIS >"$SCRIPT_DIR/models/mri_visualizer.log" 2>&1 &
+    mri_visualizer_pid=$!
+    printf 'OA visualizer PID %d; MRI visualizer PID %d. Close windows when finished.\n' \
+        "$visualizer_pid" "$mri_visualizer_pid"
 fi
 
-# JSON records
-if [[ -f "data/spine_records.json" ]]; then
-    RECORD_COUNT=$(grep -c '"patient_id"' data/spine_records.json 2>/dev/null || echo 0)
-    pass "data/spine_records.json     exists  (${RECORD_COUNT} record(s))"
-else
-    fail "data/spine_records.json     NOT found"
-    ERRORS=$((ERRORS + 1))
+if [[ "$LAUNCH_OS" -eq 1 ]]; then
+    cd "$ROOT_DIR"
+    exec ./KarnixOS
 fi
-
-# =============================================================================
-#  STEP 7 – Cleanup (optional)
-# =============================================================================
-step "Step 7: Cleanup"
-
-if [[ "$KEEP_TEST_IMAGES" == "1" ]]; then
-    warn "KEEP_TEST_IMAGES=1 – test images retained in data/images/"
-else
-    rm -f data/images/normal_test.pgm data/images/abnormal_test.pgm
-    info "Synthetic test images removed."
-    info "To keep them, run:  KEEP_TEST_IMAGES=1 ./setup.sh"
-fi
-
-# Leave the compiled binary and weights/records in place for user exploration
-
-# =============================================================================
-#  Summary
-# =============================================================================
-echo ""
-echo "══════════════════════════════════════════════════════════════════"
-if [[ $ERRORS -eq 0 ]]; then
-    echo -e "${GREEN}${BOLD}  ALL CHECKS PASSED — Karnix Spine Edge is working correctly.${RESET}"
-    echo ""
-    echo "  To run with your own images:"
-    echo "    1. Copy labelled images into data/images/"
-    echo "       Naming: normal_XXXX.jpg  or  abnormal_XXXX.jpg"
-    echo "    2. ./spine_cli"
-    echo ""
-    echo "  Supported formats: PPM · PGM · JPEG · PNG · TIFF · BMP"
-else
-    echo -e "${RED}${BOLD}  $ERRORS CHECK(S) FAILED — Review errors above.${RESET}"
-fi
-echo "══════════════════════════════════════════════════════════════════"
-echo ""
-
-exit $ERRORS

@@ -1,0 +1,63 @@
+{
+  "detections": [
+    {
+      "id": "det-0000",
+      "label": "shipwreck",
+      "confidence": 0.859,
+      "confidence_percent": 85.9,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 128,
+        "y": 0,
+        "w": 8,
+        "h": 150
+      },
+      "size_m": {
+        "width": 2.115,
+        "height": 39.648
+      },
+      "range_m": 30.0,
+      "image": "WhatsApp Image 2026-09-07 at 18.40.22.jpeg",
+      "features": {
+        "detector": "acoustic_saliency",
+        "area_px": 543.5,
+        "aspect_ratio": 0.053,
+        "shadow_ratio": 0.674,
+        "contrast_ratio": 2.096,
+        "snr_dB": 12.31,
+        "peak_intensity": 253
+      }
+    },
+    {
+      "id": "det-0001",
+      "label": "shipwreck",
+      "confidence": 0.6856,
+      "confidence_percent": 68.6,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 0,
+        "y": 116,
+        "w": 24,
+        "h": 222
+      },
+      "size_m": {
+        "width": 6.344,
+        "height": 58.678
+      },
+      "range_m": 30.0,
+      "image": "WhatsApp Image 2026-09-07 at 18.40.22.jpeg",
+      "features": {
+        "detector": "acoustic_saliency",
+        "area_px": 589.0,
+        "aspect_ratio": 0.14,
+        "shadow_ratio": 0.052,
+        "contrast_ratio": 1.119,
+        "snr_dB": 11.23,
+        "peak_intensity": 130
+      }
+    }
+  ],
+  "count": 2
+}

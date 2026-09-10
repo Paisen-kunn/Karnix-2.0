@@ -1,0 +1,92 @@
+{
+  "detections": [
+    {
+      "id": "det-0000",
+      "label": "shipwreck",
+      "confidence": 0.837,
+      "confidence_percent": 83.7,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 0,
+        "y": 68,
+        "w": 94,
+        "h": 130
+      },
+      "size_m": {
+        "width": 25.872,
+        "height": 35.78
+      },
+      "range_m": 30.0,
+      "image": "WhatsApp Image 2026-09-07 at 18.40.22 (2).jpeg",
+      "features": {
+        "detector": "acoustic_saliency",
+        "area_px": 153.5,
+        "aspect_ratio": 0.105,
+        "shadow_ratio": 0.078,
+        "contrast_ratio": 1.145,
+        "snr_dB": 14.2,
+        "peak_intensity": 140
+      }
+    },
+    {
+      "id": "det-0001",
+      "label": "shipwreck",
+      "confidence": 0.635,
+      "confidence_percent": 63.5,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 148,
+        "y": 147,
+        "w": 19,
+        "h": 121
+      },
+      "size_m": {
+        "width": 5.229,
+        "height": 33.303
+      },
+      "range_m": 30.0,
+      "image": "WhatsApp Image 2026-09-07 at 18.40.22 (2).jpeg",
+      "features": {
+        "detector": "acoustic_saliency",
+        "area_px": 539.0,
+        "aspect_ratio": 0.157,
+        "shadow_ratio": 0.039,
+        "contrast_ratio": 1.592,
+        "snr_dB": 14.17,
+        "peak_intensity": 132
+      }
+    },
+    {
+      "id": "det-0002",
+      "label": "shipwreck",
+      "confidence": 0.6034,
+      "confidence_percent": 60.3,
+      "lat": null,
+      "lon": null,
+      "bbox_px": {
+        "x": 200,
+        "y": 146,
+        "w": 18,
+        "h": 35
+      },
+      "size_m": {
+        "width": 4.954,
+        "height": 9.633
+      },
+      "range_m": 30.0,
+      "image": "WhatsApp Image 2026-09-07 at 18.40.22 (2).jpeg",
+      "features": {
+        "detector": "acoustic_saliency",
+        "area_px": 293.5,
+        "aspect_ratio": 0.514,
+        "shadow_ratio": 0.046,
+        "contrast_ratio": 1.522,
+        "snr_dB": 11.12,
+        "peak_intensity": 117
+      }
+    }
+  ],
+  "count": 3
+}
